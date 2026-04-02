@@ -1,6 +1,7 @@
-import express from "express";
-import cors from "cors";
 import "dotenv/config";
+import cors from "cors";
+import express from "express";
+import cookieParser from "cookie-parser";
 import { connectDB } from "./src/config/db.js";
 
 const app = express();
@@ -9,8 +10,10 @@ const corsOption = {
   origin: "http://localhost:5173",
 };
 
-app.use(cors(corsOption));
 app.use(express.json());
+app.use(cookieParser());
+app.use(cors(corsOption));
+
 
 connectDB()
   .then(() => {
