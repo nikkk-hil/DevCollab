@@ -12,6 +12,11 @@ const commentSchema = new Schema(
       ref: "Card",
     },
 
+    board: {
+       type: Schema.Types.ObjectId,
+      ref: "Board",       
+    },
+
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
