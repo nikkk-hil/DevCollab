@@ -15,8 +15,6 @@ const corsOption = {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOption));
-app.use(mongoSanitize());
-app.use(xss());
 
 
 connectDB()
@@ -33,7 +31,9 @@ connectDB()
 /* importing routes  */
 import userRouter from "./src/routes/user.routes.js";
 import boardRouter from "./src/routes/board.routes.js"
+import columnRouter from "./src/routes/column.routes.js"
 
 /* routes declaration */
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/board", boardRouter);
+app.use("/api/v1/column", columnRouter);

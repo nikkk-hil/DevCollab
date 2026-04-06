@@ -1,6 +1,6 @@
     import { asyncHandler } from "../utils/AsyncHandler.js";
     import { Board } from "../models/board.model.js";
-    import { ApiError } from "../utils/apiError";
+    import { ApiError } from "../utils/apiError.js";
     import mongoose from "mongoose";
 
     const verifyBoardOwner = asyncHandler(async (req, _, next) => {

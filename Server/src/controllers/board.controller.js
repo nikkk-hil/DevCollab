@@ -1,8 +1,8 @@
-import { ApiError } from "../utils/apiError";
+import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Board } from "../models/board.model.js";
 import { Activity } from "../models/activity.model.js";
-import { ApiResponse } from "../utils/apiResponse";
+import { ApiResponse } from "../utils/apiResponse.js";
 import mongoose from "mongoose";
 import { Card } from "../models/card.model.js";
 import { Column } from "../models/column.model.js";
@@ -47,6 +47,9 @@ const addMemberToBoard = asyncHandler(async (req, res) => {
 
   if (!mongoose.isValidObjectId(memberId))
     throw new ApiError(400, "Invalid member id.");
+
+  if (memberId === (req.user._id.toString()))
+    throw new ApiError(409, "You cannot add yourself.")
 
   const board = req.board;
 
