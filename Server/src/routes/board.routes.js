@@ -10,19 +10,20 @@ import {
 } from "../controllers/board.controller.js";
 
 const router = Router();
+router.use(verifyJWT);
 
 router
   .route("/")
-  .get(verifyJWT, getAllBoards)
-  .post(verifyJWT, createBoard);
+  .get(getAllBoards)
+  .post(createBoard);
 
 router
   .route("/:boardId/member/:memberId")
-  .patch(verifyJWT,verifyBoardOwner, addMemberToBoard)
-  .delete(verifyJWT,verifyBoardOwner, removeMemberFromBoard);
+  .patch(verifyBoardOwner, addMemberToBoard)
+  .delete(verifyBoardOwner, removeMemberFromBoard);
 
 router
   .route("/:boardId")
-  .delete(verifyJWT,verifyBoardOwner, deleteBoard);
+  .delete(verifyBoardOwner, deleteBoard);
 
 export default router;
