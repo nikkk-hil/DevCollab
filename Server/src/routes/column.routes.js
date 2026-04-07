@@ -13,7 +13,7 @@ const router = Router();
 
 router
   .route("/:boardId")
-  .get(verifyJWT, verifyBoardOwner, getBoardColumn)
+  .get(verifyJWT, getBoardColumn) // ask to claude if needed that check whether user is present in either owner or member of board
   .post(verifyJWT, verifyBoardOwner, createColumn);
 
 router

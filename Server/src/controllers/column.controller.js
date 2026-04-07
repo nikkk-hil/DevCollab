@@ -7,7 +7,12 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import mongoose from "mongoose";
 
 const getBoardColumn = asyncHandler(async (req, res) => {
-    const boardId = req.board?._id;
+    const {boardId} = req.params;
+
+    if (!boardId)
+        throw new ApiError(400, "Board id is required")
+    if (!mongoose.isValidObjectId(boardId))
+        throw new ApiError(400, "Invalid board id.")
 
     const columns = await Column.find({board: boardId})
                                 .sort({order: 1});
