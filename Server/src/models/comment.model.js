@@ -17,7 +17,7 @@ const commentSchema = new Schema(
       ref: "Board",       
     },
 
-    owner: {
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

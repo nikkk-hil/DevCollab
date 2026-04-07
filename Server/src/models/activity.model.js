@@ -10,13 +10,10 @@ const activitySchema = new Schema({
     type: String,
     required: [true, "Action is required."],
     trim: true,
-  },
-
-  owner: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
+  }
 }, {timestamps: true}
 );
+
+activitySchema.index({ board: 1, createdAt: -1 });
 
 export const Activity = mongoose.model("Activity", activitySchema);

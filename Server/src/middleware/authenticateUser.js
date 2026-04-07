@@ -2,25 +2,18 @@ import mongoose from "mongoose";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Board } from "../models/board.model.js";
-import { Column } from "../models/column.model.js";
 
 const authenticateUser = asyncHandler(async (req, _, next) => {
-  const { boardId, columnId } = req.params;
+  const { boardId } = req.params;
   const userId = req.user?._id;
 
-  if (!boardId || !columnId)
-    throw new ApiError(400, "Both boardId and columnId required.");
+  if (!boardId)
+    throw new ApiError(400, "Board id is required.");
 
-  if (!mongoose.isValidObjectId(boardId) || !mongoose.isValidObjectId(columnId))
-    throw new ApiError(400, "Invalid board or column id");
+  if (!mongoose.isValidObjectId(boardId))
+    throw new ApiError(400, "Invalid board id");
 
-  const [board, column] = await Promise.all([
-    Board.findById(boardId),
-    Column.findById(columnId),
-  ]);
-
-  if (column.board.toString() !== boardId)
-    throw new ApiError(403, "Given column doesn't belongs to given board.");
+  const board = await Board.findById(boardId);
 
   if (
     userId.toString() !== board.owner.toString() &&
@@ -29,7 +22,6 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
     throw new ApiError(401, "Unauthorized Request.");
 
   req.board = board;
-  req.column = column;
   next();
 });
 

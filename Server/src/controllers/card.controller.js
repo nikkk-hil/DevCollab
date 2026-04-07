@@ -4,6 +4,16 @@ import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
+import { Column } from "../models/column.model.js";
+
+const parseTags = (tags) => {
+  if (typeof tags !== "string") return [];
+
+  return tags
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+};
 
 const getAllCards = asyncHandler(async (req, res) => {
     const {boardId} = req.params;
@@ -26,6 +36,20 @@ const getAllCards = asyncHandler(async (req, res) => {
 const createCard = asyncHandler(async (req, res) => {
   const { title, order, tags, difficulty, link, description, priority } =
     req.body;
+    const {columnId} = req.params;
+
+    if (!columnId)
+        throw new ApiError(400, "Column id is required.")
+    if (!mongoose.isValidObjectId(columnId))
+        throw new ApiError(400, "Invalid column id.")
+
+    const column = await Column.findById(columnId);
+    if (!column)
+        throw new ApiError(404, "Column not found.")
+
+    if (column.board.toString() !== req.board?._id.toString())
+        throw new ApiError(403, "Given column doesn't belong to the given board.")
+
   const fields = {
     title,
     order,
@@ -39,28 +63,7 @@ const createCard = asyncHandler(async (req, res) => {
   if (!title || !order)
     throw new ApiError(400, "Both title and order is required.");
 
-  let tagArr = [];
-
-  if (fields.tags){
-    let str = "";
-    for(let i = 0; i < fields.tags.length; i++){
-        const char = fields.tags[i]
-        if (i === fields.tags.length-1){
-            str += char;
-            tagArr.push(str);
-        }
-        else if (char === ','){
-            tagArr.push(str)
-            str = ""
-            while(i+1 < fields.tags.length && fields.tags[i+1] === ' ')
-                i++;
-        } else {
-            str += char;
-        }
-    }
-  }
-
-  fields.tags = tagArr;
+    fields.tags = parseTags(fields.tags);
 
   let update = {};
   for (const key in fields) {
@@ -72,7 +75,7 @@ const createCard = asyncHandler(async (req, res) => {
   const card = await Card.create({
     ...update,
     board: req.board?._id,
-    column: req.column?._id,
+    column: columnId,
     createdBy: req.user?._id,
   });
 
@@ -98,28 +101,7 @@ const editCard = asyncHandler(async (req, res) => {
 
     const card = req.card;
 
-  let tagArr = [];
-
-  if (fields.tags){
-    let str = "";
-    for(let i = 0; i < fields.tags.length; i++){
-        const char = fields.tags[i]
-        if (i === fields.tags.length-1){
-            str += char;
-            tagArr.push(str);
-        }
-        else if (char === ','){
-            tagArr.push(str)
-            str = ""
-            while(i+1 < fields.tags.length && fields.tags[i+1] === ' ')
-                i++;
-        } else {
-            str += char;
-        }
-    }
-  }
-
-  fields.tags = tagArr;
+    fields.tags = parseTags(fields.tags);
 
   for (const key in fields) {
     if (fields[key]) {
