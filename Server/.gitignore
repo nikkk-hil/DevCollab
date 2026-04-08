@@ -122,6 +122,7 @@ out/
 
 .svelte-kit
 .env
+!.env.example
 
 public/temp/*
 !public/temp/.gitkeep
