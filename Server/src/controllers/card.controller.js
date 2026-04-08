@@ -4,9 +4,9 @@ import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
-import { Column } from "../models/column.model.js";
 import { Board } from "../models/board.model.js";
 import { createActivity } from "../utils/createActivity.js";
+import { User } from "../models/user.model.js";
 
 const parseTags = (tags) => {
   if (typeof tags !== "string") return [];
@@ -70,7 +70,7 @@ const createCard = asyncHandler(async (req, res) => {
   
   await createActivity(
     req.board?._id,
-    `${req.user?.name?.split(" ")[0]} created a card.`,
+    `${req.user?.fullName?.split(" ")[0]} created ${card.title}.`,
   );
 
   return res
@@ -115,10 +115,11 @@ const deleteCard = asyncHandler(async (req, res) => {
 
   await Promise.all([cardDelete, commentDelete]);
 
-  await createActivity(
-    req.board?._id,
-    `${req.user?.name?.split(" ")[0]} deleted a card.`,
-  );
+    await createActivity(
+      req.card?.board,
+      `${req.user?.fullName?.split(" ")[0]} deleted ${req.card?.title}.`,
+    );
+
 
   return res
     .status(200)
@@ -155,7 +156,17 @@ const addAssignee = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User is already assigned.");
 
   card.assignees.push(assigneeId);
-  await card.save({ validateBeforeSave: false });
+  
+  const [, assignee] = await Promise.all([
+    card.save({ validateBeforeSave: false }),
+    User.findById(assigneeId)
+  ]);
+
+    await createActivity(
+      boardId,
+      `${req.user?.fullName?.split(" ")[0]} assigned ${assignee?.fullName?.split(" ")[0]} to ${card.title}.`,
+    );
+
 
   return res
     .status(200)
@@ -179,7 +190,16 @@ const removeAssignee = asyncHandler(async (req, res) => {
     (assignee) => assignee.toString() !== assigneeId,
   );
 
-  await card.save({ validateBeforeSave: false });
+    const [, assignee] = await Promise.all([
+    card.save({ validateBeforeSave: false }),
+    User.findById(assigneeId)
+  ]);
+
+    await createActivity(
+      card.board,
+      `${req.user?.fullName?.split(" ")[0]} removed ${assignee?.fullName?.split(" ")[0]} from ${card.title}.`,
+    );
+
 
   return res
     .status(200)
@@ -187,7 +207,7 @@ const removeAssignee = asyncHandler(async (req, res) => {
 });
 
 const moveCard = asyncHandler(async (req, res) => {
-    const {cardId} = req.params;
+    const {cardId, boardId} = req.params;
     const userId = req.user?._id;
     const column = req.column;
 
@@ -202,15 +222,21 @@ const moveCard = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Card is already in the specified column.");
 
     if (!card.assignees.some(assignee => assignee.toString() === userId.toString()))
-        throw new ApiError(403, "Unauthorized Request, user is not assigned to the card.");
+        throw new ApiError(403, "Unauthorized Request, user is not authorized to move the card.");
 
     card.column = column._id;
     await card.save({ validateBeforeSave: false });
 
     await createActivity(
-        req.board?._id,
-        `${req.user?.name?.split(" ")[0]} moved ${card.title} to ${column.title}.`,
+        boardId,
+        `${req.user?.fullName?.split(" ")[0]} moved ${card.title} to ${column.title}.`,
       );
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, card, "Card moved successfully")
+    )
 });
 
 export {

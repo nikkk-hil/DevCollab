@@ -14,6 +14,16 @@ const generateAccessAndRefreshToken = async (existedUser) => {
   return { accessToken, refreshToken };
 };
 
+const getUser = asyncHandler(async (req, res) => {
+  
+  const user = await User.findById(req.user?._id).select("-password -refreshToken");
+
+  if (!user) throw new ApiError(404, "User not found.");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User fetched successfully."));
+})
+
 const userRegistration = asyncHandler(async (req, res) => {
   const { fullName, username, email, password } = req.body;
 
@@ -157,4 +167,4 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "New access token generated"));
 });
 
-export { userRegistration, userLogin, userLogout, refreshAccessToken };
+export { getUser, userRegistration, userLogin, userLogout, refreshAccessToken };

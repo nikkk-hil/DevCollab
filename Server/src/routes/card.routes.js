@@ -25,6 +25,7 @@ router.route("/:cardId/add-assignee/:assigneeId")
 router.route("/:cardId/remove-assignee/:assigneeId")
     .patch(verifyCardOwner, removeAssignee);
 
-router.route("/:cardId/move/:columnId")
+router.route("/:cardId/board/:boardId/move/:columnId")
     .patch(verifyColumnExists, moveCard);
+    
 export default router

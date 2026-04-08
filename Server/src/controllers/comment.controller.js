@@ -2,7 +2,9 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { createActivity } from "../utils/createActivity.js";
 import mongoose from "mongoose";
+import { Card } from "../models/card.model.js";
 
 const getCardComments = asyncHandler(async (req, res) => {
     const {cardId} = req.params;
@@ -33,15 +35,25 @@ const createComment = asyncHandler(async (req, res) => {
     if (!mongoose.isValidObjectId(cardId))
         throw new ApiError(400, "Invalid card id.")
 
-    const comment = await Comment.create({
-        text,
-        card: cardId,
-        board: req.board?._id,
-        createdBy: req.user?._id
-    })
+    const [comment, card] = await Promise.all([
+        Comment.create({
+            text,
+            card: cardId,
+            board: req.board?._id,
+            createdBy: req.user?._id
+        }),
+        Card.findById(cardId)
+    ])
 
     if (!comment)
         throw new ApiError(500, "Comment is not created.")
+    if (!card)
+        throw new ApiError(404, "Card not found.")
+
+    await createActivity(
+        req.board?._id,
+        `${req.user?.fullName?.split(" ")[0]} commented on ${card.title}.`,
+    )
 
     return res
     .status(201)

@@ -7,6 +7,8 @@ import mongoose from "mongoose";
 import { Card } from "../models/card.model.js";
 import { Column } from "../models/column.model.js";
 import { Comment } from "../models/comment.model.js";
+import { User } from "../models/user.model.js";
+import { createActivity } from "../utils/createActivity.js";
 
 const getAllBoards = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
@@ -58,7 +60,15 @@ const addMemberToBoard = asyncHandler(async (req, res) => {
 
   board.members.push(memberId);
 
-  await board.save({ validateBeforeSave: false });
+  const[saveBoard, member] = await Promise.all([
+    board.save({ validateBeforeSave: false }),
+    User.findById(memberId)
+  ]);
+
+  await createActivity(
+    req.board?._id,
+    `${req.user?.fullName?.split(" ")[0]} added ${member?.fullName?.split(" ")[0]} to the board.`,
+  );
 
   return res
     .status(200)
@@ -82,7 +92,16 @@ const removeMemberFromBoard = asyncHandler(async (req, res) => {
 
   board.members = members;
 
-  await board.save({ validateBeforeSave: false });
+    const[saveBoard, member] = await Promise.all([
+    board.save({ validateBeforeSave: false }),
+    User.findById(memberId)
+  ]);
+
+  await createActivity(
+    req.board?._id,
+    `${req.user?.fullName?.split(" ")[0]} removed ${member?.fullName?.split(" ")[0]} from the board.`,
+  );
+
 
   return res
     .status(200)
@@ -90,7 +109,7 @@ const removeMemberFromBoard = asyncHandler(async (req, res) => {
 });
 
 const deleteBoard = asyncHandler(async (req, res) => {
-  const { boardId } = req.params;
+  const boardId = req.board?._id;
 
   await Promise.all([
     Board.deleteOne({ _id: boardId }),
@@ -99,6 +118,11 @@ const deleteBoard = asyncHandler(async (req, res) => {
     Column.deleteMany({ board: boardId }),
     Comment.deleteMany({ board: boardId })
   ]);
+
+  await createActivity(
+    boardId,
+    `${req.user?.fullName?.split(" ")[0]} deleted the board.`,
+  );
 
   return res
     .status(200)

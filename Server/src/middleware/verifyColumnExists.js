@@ -5,8 +5,12 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 
 
 const verifyColumnExists = asyncHandler(async (req, _, next) => {
-    const boardId = req.board?._id;
-    const {columnId} = req.params;
+    const {columnId, boardId} = req.params;
+
+    if (!boardId)
+        throw new ApiError(400, "Board id is required")
+    if (!mongoose.isValidObjectId(boardId))
+        throw new ApiError(400, "Invalid board id.")
 
     if (!columnId)
         throw new ApiError(400, "Column id is required")
