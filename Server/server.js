@@ -14,6 +14,7 @@ initSocket(server);
 
 const corsOption = {
   origin: process.env.CORS_ORIGIN,
+  credentials: true
 };
 
 app.use(express.json());
@@ -47,4 +48,18 @@ app.use("/api/v1/column", columnRouter);
 app.use("/api/v1/activity", activityRouter);
 app.use("/api/v1/card", cardRouter);
 app.use("/api/v1/comment", commentRouter);
+
+// errors handling
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Something went wrong."
+
+  return res.status(statusCode)
+  .json({
+    success: false,
+    statusCode,
+    message
+  })
+})
 

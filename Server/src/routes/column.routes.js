@@ -19,7 +19,7 @@ router
   .post(verifyBoardOwner, createColumn);
 
 router
-  .route("/:boardId/column/:columnId")
+  .route("/:columnId/board/:boardId")
   .patch(verifyBoardOwner,verifyColumnExists, editColumn)
   .delete(verifyBoardOwner,verifyColumnExists, deleteColumn);
 
