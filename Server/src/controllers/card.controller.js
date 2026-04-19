@@ -24,7 +24,10 @@ const getAllCards = asyncHandler(async (req, res) => {
   if (!mongoose.isValidObjectId(boardId))
     throw new ApiError(400, "Invalid board id.");
 
-  const cards = await Card.find({ board: boardId }).sort({ order: 1 });
+  const cards = await Card.find({ board: boardId })
+  .populate("assignees", "fullName username avatar")
+  .populate("createdBy", "fullName username avatar")
+  .sort({ order: 1 });
 
   return res
     .status(200)

@@ -21,9 +21,14 @@ const cardSlice = createSlice({
                 if (card._id?.toString() === action.payload.cardId)
                     card.column = action.payload.columnId
             })
+        },
+
+        clearCards: (state) => {
+            state.cards = [];
         }
+
     }
 })
 
-export const {addCard, removeCard, changeColumnOfCard} = cardSlice.actions;
+export const {addCard, removeCard, changeColumnOfCard, clearCards} = cardSlice.actions;
 export default cardSlice.reducer;

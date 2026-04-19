@@ -14,9 +14,13 @@ const columnSlice = createSlice({
 
         removeColumn: (state, action) => {
             state.columns = state.columns.filter((column) => column._id?.toString() !== action.payload.columnId)
+        },
+
+        clearColumns: (state) => {
+            state.columns = [];
         }
     }
 })
 
-export const { addColumn, removeColumn } = columnSlice.actions;
+export const { addColumn, removeColumn, clearColumns } = columnSlice.actions;
 export default columnSlice.reducer;

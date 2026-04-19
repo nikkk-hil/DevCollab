@@ -15,7 +15,7 @@ const getAllBoards = asyncHandler(async (req, res) => {
 
   const boards = await Board.find({
     $or: [{ owner: userId }, { members: userId }],
-  });
+  }).populate("owner", "fullName username avatar").populate("members", "fullName username avatar");
 
   return res.status(200).json(new ApiResponse(200, boards, "Boards fetched."));
 });
@@ -29,13 +29,20 @@ const createBoard = asyncHandler(async (req, res) => {
   if (!["DSA", "Project"].some((e) => e === type.trim()))
     throw new ApiError(400, "Type of board is invalid.");
 
-  const board = await Board.create({
-    title,
-    type,
-    owner: userId,
-  });
+  const board = await Board.findById(
+    (await Board.create({
+      title,
+      type,
+      owner: userId,
+    }))._id
+  ).populate("owner", "fullName username avatar");
 
   if (!board) throw new ApiError(500, "Board not created.");
+
+  await createActivity(
+    board._id,
+    `${req.user?.fullName?.split(" ")[0]} created a board.`,
+  );
 
   return res
     .status(201)
@@ -67,7 +74,7 @@ const addMemberToBoard = asyncHandler(async (req, res) => {
 
   await createActivity(
     req.board?._id,
-    `${req.user?.fullName?.split(" ")[0]} added ${member?.fullName?.split(" ")[0]} to the board.`,
+    `${req.user?.fullName?.split(" ")[0]} added ${member?.fullName?.split(" ")[0]}`,
   );
 
   return res
@@ -99,13 +106,13 @@ const removeMemberFromBoard = asyncHandler(async (req, res) => {
 
   await createActivity(
     req.board?._id,
-    `${req.user?.fullName?.split(" ")[0]} removed ${member?.fullName?.split(" ")[0]} from the board.`,
+    `${req.user?.fullName?.split(" ")[0]} removed ${member?.fullName?.split(" ")[0]}`,
   );
 
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "Member removed from board."));
+    .json(new ApiResponse(200, saveBoard, "Member removed from board."));
 });
 
 const deleteBoard = asyncHandler(async (req, res) => {
@@ -121,7 +128,7 @@ const deleteBoard = asyncHandler(async (req, res) => {
 
   await createActivity(
     boardId,
-    `${req.user?.fullName?.split(" ")[0]} deleted the board.`,
+    `${req.user?.fullName?.split(" ")[0]} deleted a board.`,
   );
 
   return res

@@ -10,24 +10,40 @@ function LoginComponent() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [apiCalling, setApiCalling] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("")
 
   useEffect(() => {
+    setLoading(true)
     if (isAuthenticated) {
-      navigate("/");
+      navigate("/", {replace: true});
     }
+    setLoading(false)
   }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      setError("")
+      setApiCalling(true)
       const user = await loginUser({ username: usernameOrEmail, password });
       dispatch(login(user.data.data));
-      navigate("/");
+      navigate("/", {replace: true});
     } catch (error) {
-      console.error(error);
+      setError(error.response?.data?.message || "Login Failed, try again.")
     } finally {
+      setApiCalling(false)
     }
   };
+
+      if (loading)
+        return(
+            <div>
+                Loading...
+            </div>
+        )
+
   return (
     <div>
       <form onSubmit={handleLogin}>
@@ -43,7 +59,12 @@ function LoginComponent() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={apiCalling}>Submit</button>
+        {
+          error && <div>
+            {error}
+          </div>
+        }
       </form>
     </div>
   );

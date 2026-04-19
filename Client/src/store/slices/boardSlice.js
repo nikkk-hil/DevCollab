@@ -17,10 +17,14 @@ const boardSlice = createSlice({
         },
 
         removeBoard: (state, action) => {
-            state.boards = state.boards.filter((board) => board._id !== action.payload._id)
+            state.boards = state.boards.filter((board) => board._id !== action.payload)
+        },
+
+        clearBoard: (state) => {
+            state.boards = [];
         }
     }
 })
 
-export const {addBoard, removeBoard} = boardSlice.actions;
+export const {addBoard, removeBoard, clearBoard} = boardSlice.actions;
 export default boardSlice.reducer
