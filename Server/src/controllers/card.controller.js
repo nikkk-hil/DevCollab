@@ -3,10 +3,10 @@ import { Card } from "../models/card.model.js";
 import { Comment } from "../models/comment.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { asyncHandler } from "../utils/ah.js";
 import { Board } from "../models/board.model.js";
 import { createActivity } from "../utils/createActivity.js";
 import { User } from "../models/user.model.js";
+import { asyncHandler } from "../utils/AsyncHandler.js";
 
 const parseTags = (tags) => {
   if (typeof tags !== "string") return [];
