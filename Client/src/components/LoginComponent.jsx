@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { loginUser } from "../api/auth.js";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/slices/authSlice.js";
 
@@ -11,61 +11,136 @@ function LoginComponent() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [apiCalling, setApiCalling] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     if (isAuthenticated) {
-      navigate("/", {replace: true});
+      navigate("/", { replace: true });
     }
-    setLoading(false)
+    setLoading(false);
   }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if (!usernameOrEmail.trim() || !password.trim()) {
+      setError("Username/email and password are required.");
+      return;
+    }
+
     try {
-      setError("")
-      setApiCalling(true)
+      setError("");
+      setApiCalling(true);
       const user = await loginUser({ username: usernameOrEmail, password });
       dispatch(login(user.data.data));
-      navigate("/", {replace: true});
+      navigate("/", { replace: true });
     } catch (error) {
-      setError(error.response?.data?.message || "Login Failed, try again.")
+      setError(error.response?.data?.message || "Login failed, try again.");
     } finally {
-      setApiCalling(false)
+      setApiCalling(false);
     }
   };
 
-      if (loading)
-        return(
-            <div>
-                Loading...
-            </div>
-        )
+  if (loading)
+    return (
+      <div className="grid min-h-screen place-items-center bg-slate-100 px-4">
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm">
+          Checking your session...
+        </div>
+      </div>
+    );
 
   return (
-    <div>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Enter Username or Email"
-          value={usernameOrEmail}
-          onChange={(e) => setUsernameOrEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit" disabled={apiCalling}>Submit</button>
-        {
-          error && <div>
-            {error}
+    <div className="relative min-h-screen overflow-hidden bg-slate-100 px-4 py-8 sm:px-6">
+      <div className="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-cyan-200/70 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-10 h-72 w-72 rounded-full bg-blue-200/60 blur-3xl" />
+
+      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="hidden rounded-3xl border border-slate-200 bg-white/80 p-8 shadow-sm backdrop-blur lg:block">
+          <p className="inline-flex rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-700">
+            Welcome Back
+          </p>
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900">
+            Log in and continue building with DevCollab.
+          </h1>
+          <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
+            Manage boards, track progress, and collaborate with your team from one place.
+          </p>
+
+          <div className="mt-8 space-y-3">
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+              Real-time board collaboration
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+              Activity timeline and updates
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+              Fast workflow for interviews and projects
+            </div>
           </div>
-        }
-      </form>
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-700">DevCollab</p>
+            <h2 className="mt-2 text-3xl font-extrabold text-slate-900">Login</h2>
+            <p className="mt-2 text-sm text-slate-500">Use your username or email and password to continue.</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="mt-7 space-y-4">
+            <div>
+              <label htmlFor="usernameOrEmail" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">
+                Username or Email
+              </label>
+              <input
+                id="usernameOrEmail"
+                type="text"
+                placeholder="jane_doe or jane@mail.com"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none ring-cyan-500 placeholder:text-slate-400 focus:bg-white focus:ring"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-600">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none ring-cyan-500 placeholder:text-slate-400 focus:bg-white focus:ring"
+              />
+            </div>
+
+            {error && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={apiCalling}
+              className="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {apiCalling ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+
+          <p className="mt-5 text-center text-sm text-slate-500">
+            New to DevCollab?{" "}
+            <Link to="/signup" className="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline">
+              Create an account
+            </Link>
+          </p>
+        </section>
+      </div>
     </div>
   );
 }
