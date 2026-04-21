@@ -49,8 +49,8 @@ const createCard = asyncHandler(async (req, res) => {
     priority,
   };
 
-  if (!title || !order)
-    throw new ApiError(400, "Both title and order is required.");
+  if (!title)
+    throw new ApiError(400, "Title is required.");
 
   fields.tags = parseTags(fields.tags);
 

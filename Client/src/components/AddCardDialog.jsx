@@ -3,6 +3,9 @@ import React from 'react'
 function AddCardDialog({
   setAddCardPopup,
   columns = [],
+  cardFormData,
+  setCardFormData,
+  handleCreateCard
 }) {
   return (
           <div
@@ -41,6 +44,8 @@ function AddCardDialog({
                   <input
                     type="text"
                     placeholder="Enter card title"
+                    value={cardFormData.title}
+                    onChange={(e) => (setCardFormData(prev => ({...prev, title: e.target.value})))}
                     className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:ring"
                   />
                 </div>
@@ -49,7 +54,10 @@ function AddCardDialog({
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Difficulty
                   </p>
-                  <select className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 focus:ring">
+                  <select className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 focus:ring"
+                  value={cardFormData.difficulty}
+                  onChange={(e) => setCardFormData( prev => ({...prev, difficulty: e.target.value}))}
+                  >
                     <option>Easy</option>
                     <option>Medium</option>
                     <option>Hard</option>
@@ -60,7 +68,10 @@ function AddCardDialog({
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                     Column
                   </p>
-                  <select className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 focus:ring">
+                  <select className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 focus:ring"
+                  value={cardFormData.column}
+                  onChange={(e) => setCardFormData((prev) => ({...prev, column: e.target.value}))}
+                  >
                     <option value="">Select column</option>
                     {columns.map((column) => (
                       <option key={column._id} value={column._id}>
@@ -78,6 +89,8 @@ function AddCardDialog({
                     rows={4}
                     placeholder="Write a short description..."
                     className="mt-2 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:ring"
+                    value={cardFormData.description}
+                    onChange={(e) => setCardFormData(prev => ({...prev, description: e.target.value}))}
                   />
                 </div>
 
@@ -89,6 +102,8 @@ function AddCardDialog({
                     type="text"
                     placeholder="array, linked-list, graph"
                     className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:ring"
+                    value={cardFormData.tags}
+                    onChange={e => (setCardFormData(prev => ({...prev, tags: e.target.value})))}
                   />
                 </div>
 
@@ -100,6 +115,8 @@ function AddCardDialog({
                     type="url"
                     placeholder="https://..."
                     className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:ring"
+                    value={cardFormData.link}
+                    onChange={(e) => setCardFormData(prev => ({...prev, link: e.target.value}))}
                   />
                 </div>
               </div>
@@ -114,6 +131,7 @@ function AddCardDialog({
                 </button>
                 <button
                   type="button"
+                  onClick={handleCreateCard}
                   className="rounded-lg bg-cyan-500/80 px-3 py-1.5 text-sm font-semibold text-slate-950"
                 >
                   Create Card

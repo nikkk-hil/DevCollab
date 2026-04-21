@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getBoardColumns } from "../api/column";
-import { getCards, moveCard } from "../api/card";
+import { createCard, getCards, moveCard } from "../api/card";
 import { useDispatch, useSelector } from "react-redux";
 import { getBoardAcitivities } from "../api/activity";
 import { addColumn, clearColumns } from "../store/slices/columnSlice";
@@ -38,6 +38,15 @@ function BoardComponent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addingMember, setAddingMember] = useState(false);
+  const [cardFormData, setCardFormData] = useState({
+    title: "",
+    column: "",
+    tags: [],
+    difficulty: "Easy",
+    link: "",
+    description: "",
+  });
+  const [creatingCard, setCreatingCard] = useState(false);
 
   const activeBoard = useMemo(
     () => boards.find((board) => board._id === boardId),
@@ -152,6 +161,30 @@ function BoardComponent() {
     }
   };
 
+  const handleCreateCard = async () => {
+    try {
+      setCreatingCard(true);
+      setError("");
+      const res = await createCard(boardId, cardFormData.column, cardFormData);
+      dispatch(addCard(res.data.data));
+      setCardFormData({
+        title: "",
+        column: "",
+        tags: [],
+        difficulty: "Easy",
+        link: "",
+        description: "",
+      });
+      setAddCardPopup(false);
+    } catch (error) {
+      setError(
+        error.response?.data?.message || "Failed to create card. Please try again.",
+      );
+    } finally {
+      setCreatingCard(false);
+    }
+  };
+
   const columnCount = columns.length;
 
   if (loading) {
@@ -196,7 +229,13 @@ function BoardComponent() {
         </header>
 
         {addCardPopup && (
-          <AddCardDialog setAddCardPopup={setAddCardPopup} columns={columns} />
+          <AddCardDialog
+            setAddCardPopup={setAddCardPopup}
+            columns={columns}
+            cardFormData={cardFormData}
+            setCardFormData={setCardFormData}
+            handleCreateCard={handleCreateCard}
+          />
         )}
 
         {addMemberPopup && (
