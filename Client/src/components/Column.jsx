@@ -24,12 +24,12 @@ function DraggableCard({ card, children, columnId }) {
     <article
       ref={setNodeRef}
       style={style}
-      className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 transition-colors hover:border-cyan-300"
+      className="rounded-xl border border-slate-700 bg-slate-900 p-3 transition-colors hover:border-cyan-500/60"
     >
       <div className="mb-2 flex justify-end">
         <button
           type="button"
-          className="rounded-md bg-slate-200 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600 cursor-grab active:cursor-grabbing"
+          className="rounded-md bg-slate-800 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-300 cursor-grab active:cursor-grabbing"
           aria-label="Drag card"
           {...listeners}
           {...attributes}
@@ -62,10 +62,10 @@ function Column({ column }) {
   };
 
   return (
-    <section className="h-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="h-fit rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-bold text-slate-900">{title}</h2>
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+        <h2 className="text-base font-bold text-slate-100">{title}</h2>
+        <span className="rounded-full bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-300">
           {thisColumnCards.length}
         </span>
       </div>
@@ -73,8 +73,8 @@ function Column({ column }) {
       {thisColumnCards.length === 0 ? (
         <div
           ref={setDroppableRef}
-          className={`rounded-xl border border-dashed bg-slate-50 p-4 text-sm text-slate-500 transition-colors ${
-            isOver ? "border-cyan-400 bg-cyan-50/70" : "border-slate-200"
+          className={`rounded-xl border border-dashed bg-slate-950 p-4 text-sm text-slate-400 transition-colors ${
+            isOver ? "border-cyan-500 bg-cyan-500/10" : "border-slate-700"
           }`}
         >
           No cards in this column yet.
@@ -82,7 +82,7 @@ function Column({ column }) {
       ) : (
         <div
           ref={setDroppableRef}
-          className={`space-y-3 rounded-xl p-1 transition-colors ${isOver ? "bg-cyan-50/60" : ""}`}
+          className={`space-y-3 rounded-xl p-1 transition-colors ${isOver ? "bg-cyan-500/10" : ""}`}
         >
           {thisColumnCards.map((card) => {
             const assignees = Array.isArray(card.assignees) ? card.assignees : [];
@@ -99,7 +99,7 @@ function Column({ column }) {
 
             return (
               <DraggableCard key={card._id} card={card} columnId={column?._id}>
-                <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">{card.title}</h3>
+                <h3 className="line-clamp-2 text-sm font-semibold text-slate-100">{card.title}</h3>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span
@@ -116,19 +116,19 @@ function Column({ column }) {
                           prev === card._id ? null : card._id,
                         )
                       }
-                      className="rounded-full bg-cyan-100 px-2 py-1 text-xs font-medium text-cyan-700 transition hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                      className="rounded-full bg-cyan-500/20 px-2 py-1 text-xs font-medium text-cyan-300 transition hover:bg-cyan-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
                     >
                       {assignees.length} Assignee{assignees.length === 1 ? "" : "s"}
                     </button>
 
                     {activeAssigneePopover === card._id && (
-                      <div className="absolute left-0 top-[120%] z-20 w-64 rounded-xl border border-slate-200 bg-white p-3 shadow-xl">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <div className="absolute left-0 top-[120%] z-20 w-64 rounded-xl border border-slate-700 bg-slate-900 p-3 shadow-xl">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                           Assignees
                         </p>
 
                         {assignees.length === 0 ? (
-                          <p className="text-xs text-slate-500">No assignee yet.</p>
+                          <p className="text-xs text-slate-400">No assignee yet.</p>
                         ) : (
                           <div className="max-h-44 space-y-2 overflow-auto pr-1">
                             {assignees.map((assignee, idx) => {
@@ -140,23 +140,23 @@ function Column({ column }) {
                               return (
                                 <div
                                   key={assignee?._id || `${card._id}-assignee-${idx}`}
-                                  className="flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1.5"
+                                  className="flex items-center gap-2 rounded-lg bg-slate-800 px-2 py-1.5"
                                 >
                                   {assigneeAvatar ? (
                                     <img
                                       src={assigneeAvatar}
                                       alt={assigneeName}
-                                      className="h-8 w-8 rounded-full border border-slate-200 object-cover"
+                                      className="h-8 w-8 rounded-full border border-slate-600 object-cover"
                                     />
                                   ) : (
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 text-xs font-bold text-cyan-700">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20 text-xs font-bold text-cyan-300">
                                       {initial}
                                     </div>
                                   )}
 
                                   <div className="min-w-0">
-                                    <p className="truncate text-xs font-semibold text-slate-800">{assigneeName}</p>
-                                    <p className="truncate text-[11px] text-slate-500">@{assigneeUsername}</p>
+                                    <p className="truncate text-xs font-semibold text-slate-100">{assigneeName}</p>
+                                    <p className="truncate text-[11px] text-slate-400">@{assigneeUsername}</p>
                                   </div>
                                 </div>
                               );
@@ -167,7 +167,7 @@ function Column({ column }) {
                         <button
                           type="button"
                           onClick={() => setActiveAssigneePopover(null)}
-                          className="mt-3 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200"
+                          className="mt-3 rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-200 hover:bg-slate-700"
                         >
                           Close
                         </button>
@@ -181,7 +181,7 @@ function Column({ column }) {
                     {tags.map((tag, idx) => (
                       <span
                         key={`${card._id}-tag-${idx}`}
-                        className="rounded-md bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                        className="rounded-md bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300"
                       >
                         #{tag}
                       </span>
@@ -189,12 +189,12 @@ function Column({ column }) {
                   </div>
                 )}
 
-                <div className="mt-3 space-y-1 text-xs text-slate-600">
+                <div className="mt-3 space-y-1 text-xs text-slate-300">
                   <p>
-                    <span className="font-semibold text-slate-700">Created by:</span> {createdByDisplay}
+                    <span className="font-semibold text-slate-200">Created by:</span> {createdByDisplay}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-700">Created:</span> {card.createdAt ? getAgoTime(card.createdAt) : "Unknown"}
+                    <span className="font-semibold text-slate-200">Created:</span> {card.createdAt ? getAgoTime(card.createdAt) : "Unknown"}
                   </p>
                 </div>
 
@@ -203,7 +203,7 @@ function Column({ column }) {
                     href={link}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 inline-block text-xs font-semibold text-cyan-700 hover:text-cyan-800 hover:underline"
+                    className="mt-3 inline-block text-xs font-semibold text-cyan-300 hover:text-cyan-200 hover:underline"
                   >
                     Open Reference
                   </a>

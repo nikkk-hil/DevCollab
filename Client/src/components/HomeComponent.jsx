@@ -3,7 +3,7 @@ import Board from "./Board.jsx";
 import HomeHeader from "./HomeHeader.jsx";
 import { useEffect, useState } from "react";
 import { createBoard, deleteBoard, getBoards, removeMemberFromBoard } from "../api/board.js";
-import { addBoard, clearBoard, removeBoard } from "../store/slices/boardSlice.js";
+import { addBoard, clearBoard, removeBoard, updateBoard } from "../store/slices/boardSlice.js";
 import { logoutUser } from "../api/auth.js";
 import { logout } from "../store/slices/authSlice.js";
 import { clearColumns } from "../store/slices/columnSlice.js";
@@ -28,6 +28,7 @@ function HomeComponent() {
   const [apiCalling, setApiCalling] = useState(false)
   const [boardError, setBoardError] = useState("")
 
+
   // Challenge 2:
   // Fetch boards on mount.
   // Question: where should source-of-truth live, API state or Redux state?
@@ -36,8 +37,10 @@ function HomeComponent() {
   useEffect(() => {
     (async () => {
       try {
+        console.log(boards);
         if (boards.length === 0) setLoading(true);
         const res = await getBoards();
+        console.log(res.data.data);
         res.data.data.forEach((board) => dispatch(addBoard(board)));
       } catch (error) {
         setError(
@@ -118,8 +121,7 @@ function HomeComponent() {
         setBoardError("");
         setApiCalling(true)
         const res = await removeMemberFromBoard(boardId, memberId)
-        dispatch(removeBoard(res.data?.data?._id))
-        dispatch(addBoard(res.data?.data))
+        dispatch(updateBoard(res.data.data));
     } catch (error) {
         setBoardError(
             error.response?.data?.message ||
@@ -152,13 +154,13 @@ function HomeComponent() {
   // Implement disable/guard logic and idempotent UI updates.
 
   if (loading) return(
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-slate-600">Loading...</div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="text-slate-300">Loading...</div>
     </div>
   )
 
   return (
-    <section className="min-h-screen bg-slate-100/60 p-4 sm:p-6">
+    <section className="min-h-screen bg-slate-950 p-4 sm:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         <HomeHeader
           // TODO: implement logout handler and pass it here.
@@ -170,21 +172,21 @@ function HomeComponent() {
         <form
           // TODO: implement create-board submit flow.
           onSubmit={handleCreateBoard}
-          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+          className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-sm"
         >
-          <h2 className="text-lg font-bold text-slate-900">Create New Board</h2>
+          <h2 className="text-lg font-bold text-slate-100">Create New Board</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_180px_auto]">
             <input
               type="text"
               placeholder="Enter board title"
               value={boardTitle}
               onChange={(e) => setBoardTitle(e.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-cyan-500 focus:ring"
+              className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:ring"
             />
             <select
               value={boardType}
               onChange={(e) => setBoardType(e.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none ring-cyan-500 focus:ring"
+              className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none ring-cyan-400 focus:ring"
             >
               <option value="DSA">DSA</option>
               <option value="Project">Project</option>
@@ -192,7 +194,7 @@ function HomeComponent() {
             <button
               type="submit"
               disabled={apiCalling}
-              className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700"
+              className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400"
             >
               Add Board
             </button>
@@ -200,10 +202,10 @@ function HomeComponent() {
         </form>
 
         {/* TODO: render API/global error state here after you implement data flow. */}
-        {error && <div className="text-red-500">{error}</div>}
+        {error && <div className="text-red-400">{error}</div>}
 
         {boards.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+          <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900 p-8 text-center text-slate-400">
             No boards available. Create your first board.
           </div>
         ) : (

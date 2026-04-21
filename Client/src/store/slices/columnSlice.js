@@ -16,11 +16,18 @@ const columnSlice = createSlice({
             state.columns = state.columns.filter((column) => column._id?.toString() !== action.payload.columnId)
         },
 
+        updateColumn: (state, action) => {
+            const index = state.columns.findIndex((column) => column._id === action.payload._id);
+            if (index !== -1) {
+                state.columns[index] = action.payload;
+            }
+        },
+
         clearColumns: (state) => {
             state.columns = [];
         }
     }
 })
 
-export const { addColumn, removeColumn, clearColumns } = columnSlice.actions;
+export const { addColumn, removeColumn, updateColumn, clearColumns } = columnSlice.actions;
 export default columnSlice.reducer;

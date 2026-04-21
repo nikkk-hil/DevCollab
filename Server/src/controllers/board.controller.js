@@ -72,6 +72,8 @@ const addMemberToBoard = asyncHandler(async (req, res) => {
     User.findById(memberId)
   ]);
 
+  const updatedBoard = await Board.findById(saveBoard._id).populate("owner", "fullName username avatar").populate("members", "fullName username avatar");
+
   await createActivity(
     req.board?._id,
     `${req.user?.fullName?.split(" ")[0]} added ${member?.fullName?.split(" ")[0]}`,
@@ -79,7 +81,7 @@ const addMemberToBoard = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "Member added to board."));
+    .json(new ApiResponse(200, updatedBoard, "Member added to board."));
 });
 
 const removeMemberFromBoard = asyncHandler(async (req, res) => {
@@ -104,6 +106,8 @@ const removeMemberFromBoard = asyncHandler(async (req, res) => {
     User.findById(memberId)
   ]);
 
+  const newBoard = await Board.findById(saveBoard._id).populate("owner", "fullName username avatar").populate("members", "fullName username avatar");
+
   await createActivity(
     req.board?._id,
     `${req.user?.fullName?.split(" ")[0]} removed ${member?.fullName?.split(" ")[0]}`,
@@ -112,7 +116,7 @@ const removeMemberFromBoard = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, saveBoard, "Member removed from board."));
+    .json(new ApiResponse(200, newBoard, "Member removed from board."));
 });
 
 const deleteBoard = asyncHandler(async (req, res) => {

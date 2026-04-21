@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { editCard } from "../../api/card";
 
 const initialState = {
     cards: []
@@ -23,6 +24,13 @@ const cardSlice = createSlice({
             })
         },
 
+        updateCard: (state, action) => {
+            const index = state.cards.findIndex((card) => card._id === action.payload._id);
+            if (index !== -1) {
+                state.cards[index] = action.payload;
+            }
+        },
+
         clearCards: (state) => {
             state.cards = [];
         }
@@ -30,5 +38,5 @@ const cardSlice = createSlice({
     }
 })
 
-export const {addCard, removeCard, changeColumnOfCard, clearCards} = cardSlice.actions;
+export const {addCard, removeCard, changeColumnOfCard, updateCard, clearCards} = cardSlice.actions;
 export default cardSlice.reducer;

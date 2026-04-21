@@ -15,9 +15,15 @@ const boardSlice = createSlice({
             }))
                 state.boards.push(data);
         },
-
         removeBoard: (state, action) => {
             state.boards = state.boards.filter((board) => board._id !== action.payload)
+        },
+
+        updateBoard: (state, action) => {
+            const index = state.boards.findIndex((board) => board._id.toString() === action.payload._id)
+            if (index !== -1){
+                state.boards[index] = action.payload
+            }
         },
 
         clearBoard: (state) => {
@@ -26,5 +32,5 @@ const boardSlice = createSlice({
     }
 })
 
-export const {addBoard, removeBoard, clearBoard} = boardSlice.actions;
+export const {addBoard, removeBoard,updateBoard, clearBoard} = boardSlice.actions;
 export default boardSlice.reducer

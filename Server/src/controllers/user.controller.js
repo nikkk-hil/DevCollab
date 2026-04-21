@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinaryService.js";
 
+
 const generateAccessAndRefreshToken = async (existedUser) => {
   const accessToken = existedUser.generateAccessToken();
   const refreshToken = existedUser.generateRefreshToken();
@@ -22,6 +23,25 @@ const getUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User fetched successfully."));
+})
+
+const getUserByUsernameOrEmail = asyncHandler(async (req, res) => {
+  const { usernameOrEmail } = req.query;
+
+  if (!usernameOrEmail?.trim()) {
+    throw new ApiError(400, "Username or email is required.");
+  }
+
+  const user = await User.findOne({
+    $or: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+  }).select("-password -refreshToken");
+
+  if (!user) throw new ApiError(404, "User not found.");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User fetched successfully."));
+
 })
 
 const userRegistration = asyncHandler(async (req, res) => {
@@ -167,4 +187,4 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "New access token generated"));
 });
 
-export { getUser, userRegistration, userLogin, userLogout, refreshAccessToken };
+export { getUser, getUserByUsernameOrEmail, userRegistration, userLogin, userLogout, refreshAccessToken };
