@@ -6,8 +6,7 @@ const createActivity = async(boardId, action) => {
         board: boardId,
         action
     }) 
-
-    getIO().to(boardId).emit("activity:new", activity)
+    getIO().to(boardId?.toString()).emit("activity:new", activity)
 }
 
 export {createActivity}

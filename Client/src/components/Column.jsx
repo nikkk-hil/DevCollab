@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { getAgoTime } from "../utils/time";
+import AddAssigneeDialog from "./AddAssigneeDialog";
+import { addAssignee } from "../api/card";
+import { updateCard } from "../store/slices/cardSlice";
 
 function DraggableCard({ card, children, columnId }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useDraggable({
     id: card._id,
     data: {
       type: "card",
@@ -42,11 +52,14 @@ function DraggableCard({ card, children, columnId }) {
   );
 }
 
-function Column({ column }) {
+function Column({ column, boardUsers }) {
+  const dispatch = useDispatch();
   const [activeAssigneePopover, setActiveAssigneePopover] = useState(null);
   const title = column?.title || "Untitled Column";
   const { cards } = useSelector((state) => state.card);
-  const thisColumnCards = cards.filter((card) => card.column?.toString() === column?._id?.toString());
+  const thisColumnCards = cards.filter(
+    (card) => card.column?.toString() === column?._id?.toString(),
+  );
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
     id: `column-${column?._id}`,
     data: {
@@ -54,11 +67,32 @@ function Column({ column }) {
       columnId: column?._id,
     },
   });
+  const [addAssigneePopover, setAddAssigneePopover] = useState(false);
+  const [addingAssignee, setAddingAssignee] = useState(false);
 
   const difficultyStyles = {
     Easy: "bg-emerald-100 text-emerald-700",
     Medium: "bg-amber-100 text-amber-700",
     Hard: "bg-rose-100 text-rose-700",
+  };
+
+  const handleAddAssigneeToCard = async (memberId) => {
+    try {
+      setAddingAssignee(true);
+      const cardId = activeAssigneePopover;
+      const res = await addAssignee(cardId, memberId);
+      dispatch(updateCard(res.data.data));
+      console.log(res.data.data);
+      setActiveAssigneePopover(null);
+      setAddAssigneePopover(false);
+    } catch (error) {
+      console.log(
+        error.response?.data?.message ||
+          "Failed to add assignee. Please try again.",
+      );
+    } finally {
+      setAddingAssignee(false);
+    }
   };
 
   return (
@@ -85,7 +119,9 @@ function Column({ column }) {
           className={`space-y-3 rounded-xl p-1 transition-colors ${isOver ? "bg-cyan-500/10" : ""}`}
         >
           {thisColumnCards.map((card) => {
-            const assignees = Array.isArray(card.assignees) ? card.assignees : [];
+            const assignees = Array.isArray(card.assignees)
+              ? card.assignees
+              : [];
             const createdBy = card.createdBy;
             const tags = Array.isArray(card.tags) ? card.tags : [];
             const difficulty = card.difficulty || "Easy";
@@ -99,7 +135,9 @@ function Column({ column }) {
 
             return (
               <DraggableCard key={card._id} card={card} columnId={column?._id}>
-                <h3 className="line-clamp-2 text-sm font-semibold text-slate-100">{card.title}</h3>
+                <h3 className="line-clamp-2 text-sm font-semibold text-slate-100">
+                  {card.title}
+                </h3>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span
@@ -118,28 +156,49 @@ function Column({ column }) {
                       }
                       className="rounded-full bg-cyan-500/20 px-2 py-1 text-xs font-medium text-cyan-300 transition hover:bg-cyan-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
                     >
-                      {assignees.length} Assignee{assignees.length === 1 ? "" : "s"}
+                      {assignees.length} Assignee
+                      {assignees.length === 1 ? "" : "s"}
                     </button>
 
                     {activeAssigneePopover === card._id && (
                       <div className="absolute left-0 top-[120%] z-20 w-64 rounded-xl border border-slate-700 bg-slate-900 p-3 shadow-xl">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          Assignees
-                        </p>
+                        <div className="flex justify-between">
+                          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Assignees
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAddAssigneePopover(true);
+                            }}
+                            className="rounded-md bg-cyan-500/20 px-2 py-1 mb-1 text-xs font-medium text-cyan-300 hover:bg-cyan-500/30"
+                          >
+                            Add
+                          </button>
+                        </div>
 
                         {assignees.length === 0 ? (
-                          <p className="text-xs text-slate-400">No assignee yet.</p>
+                          <p className="text-xs text-slate-400">
+                            No assignee yet.
+                          </p>
                         ) : (
                           <div className="max-h-44 space-y-2 overflow-auto pr-1">
                             {assignees.map((assignee, idx) => {
-                              const assigneeName = assignee?.fullName || "Unknown User";
-                              const assigneeUsername = assignee?.username || "unknown";
+                              const assigneeName =
+                                assignee?.fullName || "Unknown User";
+                              const assigneeUsername =
+                                assignee?.username || "unknown";
                               const assigneeAvatar = assignee?.avatar || "";
-                              const initial = assigneeName.trim().charAt(0).toUpperCase() || "U";
+                              const initial =
+                                assigneeName.trim().charAt(0).toUpperCase() ||
+                                "U";
 
                               return (
                                 <div
-                                  key={assignee?._id || `${card._id}-assignee-${idx}`}
+                                  key={
+                                    assignee?._id ||
+                                    `${card._id}-assignee-${idx}`
+                                  }
                                   className="flex items-center gap-2 rounded-lg bg-slate-800 px-2 py-1.5"
                                 >
                                   {assigneeAvatar ? (
@@ -155,8 +214,12 @@ function Column({ column }) {
                                   )}
 
                                   <div className="min-w-0">
-                                    <p className="truncate text-xs font-semibold text-slate-100">{assigneeName}</p>
-                                    <p className="truncate text-[11px] text-slate-400">@{assigneeUsername}</p>
+                                    <p className="truncate text-xs font-semibold text-slate-100">
+                                      {assigneeName}
+                                    </p>
+                                    <p className="truncate text-[11px] text-slate-400">
+                                      @{assigneeUsername}
+                                    </p>
                                   </div>
                                 </div>
                               );
@@ -172,6 +235,18 @@ function Column({ column }) {
                           Close
                         </button>
                       </div>
+                    )}
+
+                    {addAssigneePopover && (
+                      <AddAssigneeDialog
+                        setAddAssigneePopover={setAddAssigneePopover}
+                        addAssigneePopover={addAssigneePopover}
+                        boardUsers={boardUsers}
+                        handleAddAssigneeToCard={(assigneeId) => {
+                          handleAddAssigneeToCard(assigneeId);
+                        }}
+
+                      />
                     )}
                   </div>
                 </div>
@@ -191,10 +266,16 @@ function Column({ column }) {
 
                 <div className="mt-3 space-y-1 text-xs text-slate-300">
                   <p>
-                    <span className="font-semibold text-slate-200">Created by:</span> {createdByDisplay}
+                    <span className="font-semibold text-slate-200">
+                      Created by:
+                    </span>{" "}
+                    {createdByDisplay}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-200">Created:</span> {card.createdAt ? getAgoTime(card.createdAt) : "Unknown"}
+                    <span className="font-semibold text-slate-200">
+                      Created:
+                    </span>{" "}
+                    {card.createdAt ? getAgoTime(card.createdAt) : "Unknown"}
                   </p>
                 </div>
 

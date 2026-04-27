@@ -9,7 +9,16 @@ const activitySlice = createSlice({
     initialState,
     reducers: {
         addActivity: (state, action) => {
-            state.activities.push(action.payload);
+            const incomingId = action.payload?._id?.toString?.() || action.payload?._id;
+
+            if (incomingId) {
+                state.activities = state.activities.filter(
+                    (activity) => (activity?._id?.toString?.() || activity?._id) !== incomingId,
+                );
+            }
+
+            state.activities.unshift(action.payload);
+            state.activities = state.activities.slice(0, 10);
         },
         clearActivities: (state) => {
             state.activities = [];

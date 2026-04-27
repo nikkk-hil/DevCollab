@@ -24,6 +24,8 @@ import { getUserByUsernameOrEmail } from "../api/auth";
 import { updateBoard } from "../store/slices/boardSlice";
 import AddCardDialog from "./AddCardDialog";
 import AddMemberDialog from "./AddMemberDialog";
+import { useSocket } from "../contexts/SocketContext";
+import ActivityComponent from "./ActivityComponent";
 
 function BoardComponent() {
   const dispatch = useDispatch();
@@ -38,6 +40,7 @@ function BoardComponent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addingMember, setAddingMember] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [cardFormData, setCardFormData] = useState({
     title: "",
     column: "",
@@ -47,10 +50,75 @@ function BoardComponent() {
     description: "",
   });
   const [creatingCard, setCreatingCard] = useState(false);
+  const socket = useSocket();
 
   const activeBoard = useMemo(
     () => boards.find((board) => board._id === boardId),
     [boards, boardId],
+  );
+
+  useEffect(() => {
+    const fetchBoardData = async () => {
+      if (!boardId) return;
+
+      try {
+        setLoading(true);
+        setError("");
+
+        dispatch(clearColumns());
+        dispatch(clearCards());
+        dispatch(clearActivities());
+
+        const [columnsRes, cardsRes, activitiesRes] = await Promise.all([
+          getBoardColumns(boardId),
+          getCards(boardId),
+          getBoardAcitivities(boardId),
+        ]);
+
+        columnsRes.data.data.forEach((column) => dispatch(addColumn(column)));
+        cardsRes.data.data.forEach((card) => dispatch(addCard(card)));
+        for (let i = activitiesRes.data.data.length -1; i >= 0; i--){
+          dispatch(addActivity(activitiesRes.data.data[i]))
+        }
+
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch board data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBoardData();
+
+    return () => {
+      dispatch(clearColumns());
+      dispatch(clearCards());
+      dispatch(clearActivities());
+    };
+  }, [boardId, dispatch]);
+
+  useEffect(() => {
+    if (!socket || !boardId) return;
+
+    socket.emit("join:board", boardId);
+    const handleNewActivity = (activity) => {
+      console.log("Activity Recieved", activity);
+      dispatch(addActivity(activity));
+    };
+
+    socket.on("activity:new", handleNewActivity);
+
+    return () => {
+      socket.off("activity:new", handleNewActivity);
+    };
+  }, [socket, boardId, dispatch]);
+
+  const boardUsers = useMemo(
+    () =>
+      activeBoard?.members
+        ? [...activeBoard.members, activeBoard.owner]
+        : [activeBoard?.owner],
+    [activeBoard],
   );
 
   const sensors = useSensors(
@@ -94,45 +162,6 @@ function BoardComponent() {
       );
     }
   };
-
-  useEffect(() => {
-    const fetchBoardData = async () => {
-      if (!boardId) return;
-
-      try {
-        setLoading(true);
-        setError("");
-
-        dispatch(clearColumns());
-        dispatch(clearCards());
-        dispatch(clearActivities());
-
-        const [columnsRes, cardsRes, activitiesRes] = await Promise.all([
-          getBoardColumns(boardId),
-          getCards(boardId),
-          getBoardAcitivities(boardId),
-        ]);
-
-        columnsRes.data.data.forEach((column) => dispatch(addColumn(column)));
-        cardsRes.data.data.forEach((card) => dispatch(addCard(card)));
-        activitiesRes.data.data.forEach((activity) =>
-          dispatch(addActivity(activity)),
-        );
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch board data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBoardData();
-
-    return () => {
-      dispatch(clearColumns());
-      dispatch(clearCards());
-      dispatch(clearActivities());
-    };
-  }, [boardId, dispatch]);
 
   const handleAddMemberToBoard = async () => {
     try {
@@ -178,7 +207,8 @@ function BoardComponent() {
       setAddCardPopup(false);
     } catch (error) {
       setError(
-        error.response?.data?.message || "Failed to create card. Please try again.",
+        error.response?.data?.message ||
+          "Failed to create card. Please try again.",
       );
     } finally {
       setCreatingCard(false);
@@ -225,8 +255,23 @@ function BoardComponent() {
             >
               Add Member
             </button>
+            <button
+              onClick={() => setShowNotifications((prev) => !prev)}
+              className="cursor-pointer rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/30"
+            >
+              Notifications
+            </button>
           </div>
         </header>
+
+        {/* Notification Drawer Template (UI only) */}
+        {/* Remove `hidden` and attach your own open/close logic */}
+        {showNotifications && (
+          <ActivityComponent
+            setShowNotifications={setShowNotifications}
+            activities={activities}
+          />
+        )}
 
         {addCardPopup && (
           <AddCardDialog
@@ -266,7 +311,11 @@ function BoardComponent() {
                 }}
               >
                 {columns.map((column) => (
-                  <Column key={column._id} column={column} />
+                  <Column
+                    key={column._id}
+                    column={column}
+                    boardUsers={boardUsers}
+                  />
                 ))}
               </div>
             </DndContext>

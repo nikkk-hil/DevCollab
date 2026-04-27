@@ -165,6 +165,8 @@ const addAssignee = asyncHandler(async (req, res) => {
     User.findById(assigneeId)
   ]);
 
+  const updatedCard = await Card.findById(card._id).populate("assignees", "fullName username avatar");
+
     await createActivity(
       boardId,
       `${req.user?.fullName?.split(" ")[0]} assigned ${assignee?.fullName?.split(" ")[0]} to ${card.title}.`,
@@ -173,7 +175,7 @@ const addAssignee = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, card, "Assignee added for the card."));
+    .json(new ApiResponse(200, updatedCard, "Assignee added for the card."));
 });
 
 const removeAssignee = asyncHandler(async (req, res) => {
@@ -198,6 +200,8 @@ const removeAssignee = asyncHandler(async (req, res) => {
     User.findById(assigneeId)
   ]);
 
+  const updatedCard = await Card.findById(card._id).populate("assignees", "fullName username avatar");
+
     await createActivity(
       card.board,
       `${req.user?.fullName?.split(" ")[0]} removed ${assignee?.fullName?.split(" ")[0]} from ${card.title}.`,
@@ -206,7 +210,7 @@ const removeAssignee = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, card, "Assignee removed from the card."));
+    .json(new ApiResponse(200, updatedCard, "Assignee removed from the card."));
 });
 
 const moveCard = asyncHandler(async (req, res) => {
