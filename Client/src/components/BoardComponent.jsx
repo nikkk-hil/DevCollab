@@ -76,7 +76,10 @@ function BoardComponent() {
         ]);
 
         columnsRes.data.data.forEach((column) => dispatch(addColumn(column)));
-        cardsRes.data.data.forEach((card) => dispatch(addCard(card)));
+        
+        for (let i = cardsRes.data.data.length -1; i >= 0; i--){
+          dispatch(addCard(cardsRes.data.data[i]))
+        }
         for (let i = activitiesRes.data.data.length -1; i >= 0; i--){
           dispatch(addActivity(activitiesRes.data.data[i]))
         }
@@ -263,9 +266,7 @@ function BoardComponent() {
             </button>
           </div>
         </header>
-
-        {/* Notification Drawer Template (UI only) */}
-        {/* Remove `hidden` and attach your own open/close logic */}
+        
         {showNotifications && (
           <ActivityComponent
             setShowNotifications={setShowNotifications}

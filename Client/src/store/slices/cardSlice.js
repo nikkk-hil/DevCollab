@@ -10,11 +10,17 @@ const cardSlice = createSlice({
     initialState,
     reducers: {
         addCard: (state, action) => {
-            state.cards.push(action.payload);
+            const incomingId = action.payload?._id?.toString?.() || action.payload?._id
+
+            if (incomingId){
+                state.cards = state.cards.filter( (card) => (card?._id?.toString?.() || card?._id) !== incomingId)
+            }
+
+            state.cards.unshift(action.payload);
         },
 
         removeCard: (state, action) => {
-            state.cards = state.cards.filter((card) => card._id?.toString() !== action.payload.cardId)
+            state.cards = state.cards.filter((card) => card._id?.toString() !== action.payload)
         },
 
         changeColumnOfCard: (state, action) => {

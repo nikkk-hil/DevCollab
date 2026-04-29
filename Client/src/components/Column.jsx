@@ -4,8 +4,8 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { getAgoTime } from "../utils/time";
 import AddAssigneeDialog from "./AddAssigneeDialog";
-import { addAssignee } from "../api/card";
-import { updateCard } from "../store/slices/cardSlice";
+import { addAssignee, deleteCard } from "../api/card";
+import { removeCard, updateCard } from "../store/slices/cardSlice";
 
 function DraggableCard({ card, children, columnId }) {
   const {
@@ -69,6 +69,7 @@ function Column({ column, boardUsers }) {
   });
   const [addAssigneePopover, setAddAssigneePopover] = useState(false);
   const [addingAssignee, setAddingAssignee] = useState(false);
+  const [deletingCard, setDeletingCard] = useState(false);
 
   const difficultyStyles = {
     Easy: "bg-emerald-100 text-emerald-700",
@@ -94,6 +95,18 @@ function Column({ column, boardUsers }) {
       setAddingAssignee(false);
     }
   };
+
+  const handleDeleteCard = async (cardId) => {
+    try {
+      setDeletingCard(true);
+      await deleteCard(cardId);
+      dispatch(removeCard(cardId));
+    } catch (error) {
+      console.log(error.response?.data?.message || "Failed to delete card. Please try again.");
+    } finally {
+      setDeletingCard(false);
+    }
+  }
 
   return (
     <section className="h-fit rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
@@ -279,7 +292,8 @@ function Column({ column, boardUsers }) {
                   </p>
                 </div>
 
-                {link && (
+                <div className="flex justify-between">
+                  {link ? (
                   <a
                     href={link}
                     target="_blank"
@@ -288,7 +302,14 @@ function Column({ column, boardUsers }) {
                   >
                     Open Reference
                   </a>
-                )}
+                ): (<div></div>)}
+                <button 
+                onClick={() => handleDeleteCard(card._id)}
+                disabled={deletingCard}
+                className="mt-3 inline-block text-xs font-semibold text-red-400 hover:text-red-300 cursor-pointer">
+                  Delete
+                </button>
+                </div>
               </DraggableCard>
             );
           })}
