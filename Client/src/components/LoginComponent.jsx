@@ -92,7 +92,7 @@ function LoginComponent() {
           <form onSubmit={handleLogin} className="mt-7 space-y-4">
             <div>
               <label htmlFor="usernameOrEmail" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
-                Username or Email
+                Username
               </label>
               <input
                 id="usernameOrEmail"
