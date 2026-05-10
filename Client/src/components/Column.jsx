@@ -68,7 +68,12 @@ function Column({ title, columnKey, status, setShowFeedback, setShowNotes }) {
                     : createdBy
                       ? "User"
                       : "Unknown";
-                // const notes = card.notes || "";
+                const notes = card.notes || null;
+                const hasNotes =
+                  notes &&
+                  Object.values(notes).some((value) =>
+                    String(value || "").trim(),
+                  );
                 // const aiFeedback = card.aiFeedback || ""
 
                 return (
@@ -117,12 +122,14 @@ function Column({ title, columnKey, status, setShowFeedback, setShowNotes }) {
                           </div>
                         )}
                         <div className="mt-3 flex flex-wrap gap-3">
-                          <button
-                            onClick={() => setShowNotes(card._id)}
-                            className="inline-block cursor-pointer text-xs font-semibold text-cyan-300 hover:text-cyan-200"
-                          >
-                            Notes
-                          </button>
+                          {status === "completed" && hasNotes && (
+                            <button
+                              onClick={() => setShowNotes(card._id)}
+                              className="inline-block cursor-pointer text-xs font-semibold text-cyan-300 hover:text-cyan-200"
+                            >
+                              Notes
+                            </button>
+                          )}
                           {status === "completed" && (
                             <button
                               onClick={() => setShowFeedback(card._id)}
