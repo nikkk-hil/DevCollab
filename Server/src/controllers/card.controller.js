@@ -26,9 +26,11 @@ const getAllCards = asyncHandler(async (req, res) => {
   if (!mongoose.isValidObjectId(boardId))
     throw new ApiError(400, "Invalid board id.");
 
-  const boardCards = await Card.find({ board: boardId }).sort({
-    createdAt: -1,
-  });
+  const boardCards = await Card.find({ board: boardId })
+    .populate("createdBy", "fullName username avatar")
+    .sort({
+      createdAt: -1,
+    });
   const userCards = await CardProgress.find({
     user: req.user?._id,
     card: { $in: boardCards.map((card) => card._id) },
@@ -102,6 +104,11 @@ const createCard = asyncHandler(async (req, res) => {
 
   if (!card) throw new ApiError(500, "Card is not created.");
 
+  const populatedCard = await Card.findById(card._id).populate(
+    "createdBy",
+    "fullName username avatar",
+  );
+
   await createActivity(
     req.board?._id,
     `${req.user?.fullName?.split(" ")[0]} created ${card.title}.`,
@@ -109,7 +116,7 @@ const createCard = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, card, "Card created successfully."));
+    .json(new ApiResponse(201, populatedCard || card, "Card created successfully."));
 });
 
 const editCard = asyncHandler(async (req, res) => {
@@ -309,6 +316,9 @@ const updateCardProgress = asyncHandler(async (req, res) => {
   console.log(notes)
   // console.log(update)
 
+  const card = await Card.findById(cardId).select("title board");
+  if (!card) throw new ApiError(404, "Card not found.");
+
   const maxOrder = await CardProgress.findOne({ user: userId, status })
     .sort({ order: -1 })
     .select("order")
@@ -320,6 +330,11 @@ const updateCardProgress = asyncHandler(async (req, res) => {
     { card: cardId, user: userId },
     { ...update, order: newOrder },
     { upsert: true, new: true },
+  );
+
+  await createActivity(
+    card.board,
+    `${req.user?.fullName?.split(" ")[0]} moved ${card.title} to ${status}.`,
   );
 
   return res

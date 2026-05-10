@@ -5,7 +5,7 @@ import { getAgoTime } from "../utils/time";
 import { deleteCard } from "../api/card";
 import { removeCard } from "../store/slices/cardSlice";
 
-function Column({ title, columnKey, status, setShowFeedback }) {
+function Column({ title, columnKey, status, setShowFeedback, setShowNotes }) {
   const dispatch = useDispatch();
   const card = useSelector((state) => state.card);
   const columnTitle = title || "Untitled Column";
@@ -116,11 +116,22 @@ function Column({ title, columnKey, status, setShowFeedback }) {
                             ))}
                           </div>
                         )}
-                        <button 
-                        onClick={() => setShowFeedback(card._id)}
-                        className="mt-3 inline-block cursor-pointer text-xs font-semibold text-blue-400 hover:text-blue-300">
-                          Feedback
-                        </button>
+                        <div className="mt-3 flex flex-wrap gap-3">
+                          <button
+                            onClick={() => setShowNotes(card._id)}
+                            className="inline-block cursor-pointer text-xs font-semibold text-cyan-300 hover:text-cyan-200"
+                          >
+                            Notes
+                          </button>
+                          {status === "completed" && (
+                            <button
+                              onClick={() => setShowFeedback(card._id)}
+                              className="inline-block cursor-pointer text-xs font-semibold text-blue-400 hover:text-blue-300"
+                            >
+                              Feedback
+                            </button>
+                          )}
+                        </div>
 
                         <div className="mt-3 space-y-1 text-xs text-slate-300">
                           <p>

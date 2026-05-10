@@ -22,6 +22,7 @@ import ActivityComponent from "./ActivityComponent";
 import { DragDropContext } from "@hello-pangea/dnd";
 import ProblemAnalyze from "./ProblemAnalyze";
 import FeedbackComponent from "./FeedbackComponent";
+import NotesComponent from "./NotesComponent";
 
 // Fixed status lanes shown for every board.
 const STATUS_COLUMNS = [
@@ -58,6 +59,7 @@ function BoardComponent() {
   });
   const [feedbackRes, setFeedbackRes] = useState(null)
   const [showFeedback, setShowFeedback] = useState(null)
+  const [showNotes, setShowNotes] = useState(null)
 
   const activeBoard = useMemo(
     () => boards.find((board) => board._id === boardId),
@@ -329,6 +331,13 @@ function BoardComponent() {
           showFeedback={showFeedback}
         />}
 
+        {showNotes && (
+          <NotesComponent
+            setShowNotes={setShowNotes}
+            showNotes={showNotes}
+          />
+        )}
+
         <div className="overflow-x-auto">
           {/* DnD context for all lanes/cards; onDragEnd is the integration point. */}
           <DragDropContext onDragEnd={handleDragEnd}>
@@ -345,6 +354,7 @@ function BoardComponent() {
                   columnKey={column.key}
                   status={column.status}
                   setShowFeedback={setShowFeedback}
+                  setShowNotes={setShowNotes}
                 />
               ))}
             </div>
