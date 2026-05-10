@@ -2,7 +2,6 @@ import React from 'react'
 
 function AddCardDialog({
   setAddCardPopup,
-  columns = [],
   cardFormData,
   setCardFormData,
   handleCreateCard
@@ -61,23 +60,6 @@ function AddCardDialog({
                     <option>Easy</option>
                     <option>Medium</option>
                     <option>Hard</option>
-                  </select>
-                </div>
-
-                <div className="rounded-xl border border-slate-700 bg-slate-950 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Column
-                  </p>
-                  <select className="mt-2 h-10 w-full rounded-lg border border-dashed border-slate-700 bg-slate-900/60 px-3 text-sm text-slate-100 outline-none ring-cyan-400 focus:ring"
-                  value={cardFormData.column}
-                  onChange={(e) => setCardFormData((prev) => ({...prev, column: e.target.value}))}
-                  >
-                    <option value="">Select column</option>
-                    {columns.map((column) => (
-                      <option key={column._id} value={column._id}>
-                        {column.title}
-                      </option>
-                    ))}
                   </select>
                 </div>
 

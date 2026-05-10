@@ -34,11 +34,6 @@ const cardSchema = new Schema(
       ref: "User",
     },
 
-    column: {
-      type: Schema.Types.ObjectId,
-      ref: "Column",
-    },
-
     tags: [
       {
         type: String,

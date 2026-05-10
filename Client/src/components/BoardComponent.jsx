@@ -1,23 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getBoardColumns } from "../api/column";
-import { createCard, getCards, moveCard } from "../api/card";
+import { createCard, getCards, getFeedback, updateProgress } from "../api/card";
 import { useDispatch, useSelector } from "react-redux";
 import { getBoardAcitivities } from "../api/activity";
-import { addColumn, clearColumns } from "../store/slices/columnSlice";
 import {
   addCard,
-  changeColumnOfCard,
+  addFeedbackNotes,
+  changeStatusOfCard,
   clearCards,
+  setCards,
 } from "../store/slices/cardSlice";
 import { addActivity, clearActivities } from "../store/slices/activitySlice";
-import {
-  DndContext,
-  PointerSensor,
-  closestCorners,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import Column from "./Column";
 import { addMemberToBoard } from "../api/board";
 import { getUserByUsernameOrEmail } from "../api/auth";
@@ -26,13 +19,21 @@ import AddCardDialog from "./AddCardDialog";
 import AddMemberDialog from "./AddMemberDialog";
 import { useSocket } from "../contexts/SocketContext";
 import ActivityComponent from "./ActivityComponent";
+import { DragDropContext } from "@hello-pangea/dnd";
+import ProblemAnalyze from "./ProblemAnalyze";
+import FeedbackComponent from "./FeedbackComponent";
+
+// Fixed status lanes shown for every board.
+const STATUS_COLUMNS = [
+  { key: "todoCards", status: "to-do", title: "To-do" },
+  { key: "inProgressCards", status: "in-progress", title: "In-Progress" },
+  { key: "completedCards", status: "completed", title: "Completed" },
+];
 
 function BoardComponent() {
   const dispatch = useDispatch();
   const { boardId } = useParams();
   const { boards } = useSelector((state) => state.board);
-  const { columns } = useSelector((state) => state.column);
-  const { cards } = useSelector((state) => state.card);
   const { activities } = useSelector((state) => state.activity);
   const [addMemberPopup, setAddMemberPopup] = useState(false);
   const [addCardPopup, setAddCardPopup] = useState(false);
@@ -43,7 +44,6 @@ function BoardComponent() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [cardFormData, setCardFormData] = useState({
     title: "",
-    column: "",
     tags: [],
     difficulty: "Easy",
     link: "",
@@ -51,6 +51,13 @@ function BoardComponent() {
   });
   const [creatingCard, setCreatingCard] = useState(false);
   const socket = useSocket();
+  const [activeCard, setActiveCard] = useState(null);
+  const [problemData, setProblemData] = useState({
+    solution: null,
+    reflections: {},
+  });
+  const [feedbackRes, setFeedbackRes] = useState(null)
+  const [showFeedback, setShowFeedback] = useState(null)
 
   const activeBoard = useMemo(
     () => boards.find((board) => board._id === boardId),
@@ -65,25 +72,19 @@ function BoardComponent() {
         setLoading(true);
         setError("");
 
-        dispatch(clearColumns());
         dispatch(clearCards());
         dispatch(clearActivities());
 
-        const [columnsRes, cardsRes, activitiesRes] = await Promise.all([
-          getBoardColumns(boardId),
+        const [cardsRes, activitiesRes] = await Promise.all([
           getCards(boardId),
           getBoardAcitivities(boardId),
         ]);
 
-        columnsRes.data.data.forEach((column) => dispatch(addColumn(column)));
-        
-        for (let i = cardsRes.data.data.length -1; i >= 0; i--){
-          dispatch(addCard(cardsRes.data.data[i]))
+        dispatch(setCards(cardsRes.data.data));
+        console.log(cardsRes.data.data)
+        for (let i = activitiesRes.data.data.length - 1; i >= 0; i--) {
+          dispatch(addActivity(activitiesRes.data.data[i]));
         }
-        for (let i = activitiesRes.data.data.length -1; i >= 0; i--){
-          dispatch(addActivity(activitiesRes.data.data[i]))
-        }
-
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch board data.");
       } finally {
@@ -94,7 +95,6 @@ function BoardComponent() {
     fetchBoardData();
 
     return () => {
-      dispatch(clearColumns());
       dispatch(clearCards());
       dispatch(clearActivities());
     };
@@ -115,56 +115,6 @@ function BoardComponent() {
       socket.off("activity:new", handleNewActivity);
     };
   }, [socket, boardId, dispatch]);
-
-  const boardUsers = useMemo(
-    () =>
-      activeBoard?.members
-        ? [...activeBoard.members, activeBoard.owner]
-        : [activeBoard?.owner],
-    [activeBoard],
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 6,
-      },
-    }),
-  );
-
-  const handleDragEnd = async (event) => {
-    const { active, over } = event;
-
-    if (!active || !over || !boardId) return;
-
-    const cardId = active.id?.toString();
-    const fromColumnId = active.data?.current?.columnId?.toString();
-
-    const toColumnId =
-      over.data?.current?.type === "column"
-        ? over.data.current.columnId?.toString()
-        : null;
-
-    if (
-      !cardId ||
-      !fromColumnId ||
-      !toColumnId ||
-      fromColumnId === toColumnId
-    ) {
-      return;
-    }
-
-    dispatch(changeColumnOfCard({ cardId, columnId: toColumnId }));
-
-    try {
-      await moveCard(cardId, boardId, toColumnId);
-    } catch (err) {
-      dispatch(changeColumnOfCard({ cardId, columnId: fromColumnId }));
-      setError(
-        err.response?.data?.message || "Unable to move card. Please try again.",
-      );
-    }
-  };
 
   const handleAddMemberToBoard = async () => {
     try {
@@ -197,11 +147,10 @@ function BoardComponent() {
     try {
       setCreatingCard(true);
       setError("");
-      const res = await createCard(boardId, cardFormData.column, cardFormData);
+      const res = await createCard(boardId, cardFormData);
       dispatch(addCard(res.data.data));
       setCardFormData({
         title: "",
-        column: "",
         tags: [],
         difficulty: "Easy",
         link: "",
@@ -218,7 +167,78 @@ function BoardComponent() {
     }
   };
 
-  const columnCount = columns.length;
+  const handleDragEnd = async (result) => {
+    const { source, destination, draggableId } = result;
+    if (!destination || source.droppableId === destination.droppableId) return;
+
+    dispatch(
+      changeStatusOfCard({
+        cardId: draggableId,
+        to: destination.droppableId,
+        from: source.droppableId,
+      }),
+    );
+
+    if (destination.droppableId === "completed") {
+      setActiveCard({
+        cardId: draggableId,
+        source: source.droppableId,
+      });
+
+      return;
+    }
+
+    const data = {
+      status: destination.droppableId,
+      code: null,
+      notes: null,
+      aiFeedback: null,
+    };
+    try {
+      const res = await updateProgress(boardId, draggableId, data);
+    } catch (error) {
+      dispatch(
+        changeStatusOfCard({
+          cardId: draggableId,
+          to: source.droppableId,
+          from: destination.droppableId,
+        }),
+      );
+      console.log(
+        error.response?.data?.message || error || "something went wrong.",
+      );
+    }
+    // TODO: parse result (source, destination, draggableId).
+    // TODO: exit if no destination or same position.
+    // TODO: handle reorder vs move across statuses.
+    // TODO: update state optimistically and call updateCardProgress.
+    // TODO: rollback state on API failure.
+  };
+
+  const handleProblemAnalysisSubmit = async (data) => {
+    const soltion = data?.solution;
+    const reflections = {
+      approach: data?.reflections?.approach,
+      struggles: data?.reflections?.struggles,
+      timeComplexity: data?.reflections?.complexity?.time,
+      spaceComplexity: data?.reflections?.complexity?.space,
+      takeaway: data?.reflections?.takeaways,
+    };
+
+    try {
+      const progress = await updateProgress(boardId, activeCard.cardId, {status: "completed", notes: reflections});
+      setActiveCard(null);
+      const feedback = await getFeedback(boardId, activeCard.cardId, {code: soltion, notes: reflections})
+      dispatch(addFeedbackNotes(feedback.data.data))
+      setShowFeedback(feedback.data.data.card)
+    } catch (error) {
+      console.log(
+        error.response?.data?.message || error || "something went wrong.",
+      );
+    }
+  };
+
+  const columnCount = STATUS_COLUMNS.length;
 
   if (loading) {
     return (
@@ -266,7 +286,7 @@ function BoardComponent() {
             </button>
           </div>
         </header>
-        
+
         {showNotifications && (
           <ActivityComponent
             setShowNotifications={setShowNotifications}
@@ -277,7 +297,6 @@ function BoardComponent() {
         {addCardPopup && (
           <AddCardDialog
             setAddCardPopup={setAddCardPopup}
-            columns={columns}
             cardFormData={cardFormData}
             setCardFormData={setCardFormData}
             handleCreateCard={handleCreateCard}
@@ -294,34 +313,43 @@ function BoardComponent() {
           />
         )}
 
-        {columns.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900 p-8 text-center text-slate-400">
-            No columns found for this board.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCorners}
-              onDragEnd={handleDragEnd}
-            >
-              <div
-                className="grid gap-4"
-                style={{
-                  gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, minmax(260px, 1fr))`,
-                }}
-              >
-                {columns.map((column) => (
-                  <Column
-                    key={column._id}
-                    column={column}
-                    boardUsers={boardUsers}
-                  />
-                ))}
-              </div>
-            </DndContext>
-          </div>
+        {activeCard && (
+          <ProblemAnalyze
+            cardId={activeCard.cardId}
+            onSubmit={(data) => {
+              handleProblemAnalysisSubmit(data);
+            }}
+            onClose={() => setActiveCard(null)}
+            setProblemData={setProblemData}
+          />
         )}
+
+        {(showFeedback) && <FeedbackComponent
+          setShowFeedback={setShowFeedback}
+          showFeedback={showFeedback}
+        />}
+
+        <div className="overflow-x-auto">
+          {/* DnD context for all lanes/cards; onDragEnd is the integration point. */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(columnCount, 1)}, minmax(260px, 1fr))`,
+              }}
+            >
+              {STATUS_COLUMNS.map((column) => (
+                <Column
+                  key={column.status}
+                  title={column.title}
+                  columnKey={column.key}
+                  status={column.status}
+                  setShowFeedback={setShowFeedback}
+                />
+              ))}
+            </div>
+          </DragDropContext>
+        </div>
       </div>
     </section>
   );
