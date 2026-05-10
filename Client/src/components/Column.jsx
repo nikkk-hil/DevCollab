@@ -69,6 +69,7 @@ function Column({ title, columnKey, status, setShowFeedback, setShowNotes }) {
                       ? "User"
                       : "Unknown";
                 const notes = card.notes || null;
+                const hasFeedback = Boolean(card.aiFeedback);
                 const hasNotes =
                   notes &&
                   Object.values(notes).some((value) =>
@@ -130,7 +131,7 @@ function Column({ title, columnKey, status, setShowFeedback, setShowNotes }) {
                               Notes
                             </button>
                           )}
-                          {status === "completed" && (
+                          {status === "completed" && hasFeedback && (
                             <button
                               onClick={() => setShowFeedback(card._id)}
                               className="inline-block cursor-pointer text-xs font-semibold text-blue-400 hover:text-blue-300"

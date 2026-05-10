@@ -205,7 +205,7 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                   onClick={() => onSubmit({ solution: code, reflections: notes })}
                   className="rounded-full border border-emerald-400/70 bg-emerald-500/20 px-6 py-2 text-xs uppercase tracking-[0.24em] text-emerald-200 transition hover:border-emerald-300 hover:bg-emerald-500/30"
                 >
-                  Analyze
+                  Submit
                 </button>
               </div>
             </div>
