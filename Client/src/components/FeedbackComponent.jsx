@@ -12,7 +12,6 @@ function FeedbackComponent({ setShowFeedback, showFeedback }) {
         })
 
     })
-    console.log("PICKEDCARD:", pickCard)
     const feedback = typeof pickCard === "object" ? pickCard : {};
     const patternAnalysis = feedback?.patternAnalysis || "NA";
     const tc = feedback?.timeComplexity || "NA";

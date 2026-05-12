@@ -37,10 +37,8 @@ function HomeComponent() {
   useEffect(() => {
     (async () => {
       try {
-        console.log(boards);
         if (boards.length === 0) setLoading(true);
         const res = await getBoards();
-        console.log(res.data.data);
         res.data.data.forEach((board) => dispatch(addBoard(board)));
       } catch (error) {
         setError(

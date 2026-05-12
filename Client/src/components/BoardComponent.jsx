@@ -83,7 +83,6 @@ function BoardComponent() {
         ]);
 
         dispatch(setCards(cardsRes.data.data));
-        console.log(cardsRes.data.data)
         for (let i = activitiesRes.data.data.length - 1; i >= 0; i--) {
           dispatch(addActivity(activitiesRes.data.data[i]));
         }
@@ -107,7 +106,6 @@ function BoardComponent() {
 
     socket.emit("join:board", boardId);
     const handleNewActivity = (activity) => {
-      console.log("Activity Recieved", activity);
       dispatch(addActivity(activity));
     };
 

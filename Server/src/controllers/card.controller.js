@@ -313,8 +313,6 @@ const updateCardProgress = asyncHandler(async (req, res) => {
     if (fields[key])
       update[key] = fields[key];
   }
-  console.log(notes)
-  // console.log(update)
 
   const card = await Card.findById(cardId).select("title board");
   if (!card) throw new ApiError(404, "Card not found.");
