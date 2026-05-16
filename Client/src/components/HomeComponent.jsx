@@ -3,7 +3,7 @@ import Board from "./Board.jsx";
 import HomeHeader from "./HomeHeader.jsx";
 import { useEffect, useState } from "react";
 import { createBoard, deleteBoard, getBoards, removeMemberFromBoard } from "../api/board.js";
-import { addBoard, clearBoard, removeBoard, updateBoard } from "../store/slices/boardSlice.js";
+import { addBoard, clearBoard, removeBoard, setBoard, updateBoard } from "../store/slices/boardSlice.js";
 import { logoutUser } from "../api/auth.js";
 import { logout } from "../store/slices/authSlice.js";
 import { clearColumns } from "../store/slices/columnSlice.js";
@@ -19,7 +19,7 @@ function HomeComponent() {
   // - notifications panel
   // - per-board action loading/error
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { boards } = useSelector((state) => state.board);
   const [boardTitle, setBoardTitle] = useState("");
   const [boardType, setBoardType] = useState("DSA")
@@ -27,8 +27,6 @@ function HomeComponent() {
   const [loggingOut, setLoggingOut] = useState(false)
   const [apiCalling, setApiCalling] = useState(false)
   const [boardError, setBoardError] = useState("")
-
-
   // Challenge 2:
   // Fetch boards on mount.
   // Question: where should source-of-truth live, API state or Redux state?
@@ -39,7 +37,7 @@ function HomeComponent() {
       try {
         if (boards.length === 0) setLoading(true);
         const res = await getBoards();
-        res.data.data.forEach((board) => dispatch(addBoard(board)));
+        dispatch(setBoard(res.data.data));
       } catch (error) {
         setError(
           error.response?.data?.message ||

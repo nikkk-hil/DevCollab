@@ -25,7 +25,7 @@ function LoginComponent() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!usernameOrEmail.trim() || !password.trim()) {
+    if (!usernameOrEmail.trim() || !password) {
       setError("Username/email and password are required.");
       return;
     }
