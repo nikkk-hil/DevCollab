@@ -47,14 +47,10 @@ function HomeComponent() {
         setLoading(false);
       }
     })();
-  }, [boards.length, dispatch]);
+  }, [boards.length]);
 
-  // Challenge 3:
-  // Fetch recent activities for notifications.
-  // Puzzle: How will you merge activity lists from multiple boards and keep newest first?
 
   const handleLogout = async () => {
-
     try {
         setLoggingOut(true);
         await logoutUser();
@@ -110,8 +106,6 @@ function HomeComponent() {
 
   // Challenge 6:
   // Wire board actions (remove member, delete board).
-  // Puzzle: how will you avoid one board button showing loading for all boards?
-
   const handleRemoveMember = async (boardId, memberId) => {
     try {
         setBoardError("");
@@ -144,10 +138,6 @@ function HomeComponent() {
         setApiCalling(false);
     }
   }
-  // Challenge 7:
-  // Think interviewer mode:
-  // "How do you avoid race conditions when user clicks create/delete rapidly?"
-  // Implement disable/guard logic and idempotent UI updates.
 
   if (loading) return(
     <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -160,8 +150,7 @@ function HomeComponent() {
       <div className="mx-auto max-w-7xl space-y-5">
         <HomeHeader
           // TODO: implement logout handler and pass it here.
-          onLogout={() => {handleLogout()}}
-          // TODO: bind actual logout loading state.
+          onLogout={handleLogout}
           isLoggingOut={loggingOut}
         />
 
@@ -197,7 +186,6 @@ function HomeComponent() {
           </div>
         </form>
 
-        {/* TODO: render API/global error state here after you implement data flow. */}
         {error && <div className="text-red-400">{error}</div>}
 
         {boards.length === 0 ? (

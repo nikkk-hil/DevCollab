@@ -17,10 +17,23 @@ const corsOption = {
   credentials: true
 };
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors(corsOption));
+app.use(express.json());    //it deserializes the incoming req bodies that are fomatted as JSON into JS obj. 
+app.use(cookieParser());    //parses incoming cookie header string and convert it into JS obj attaching it to req.cookies.
+app.use(cors(corsOption));  
 
+/* CORS
+WHAT is it?
+By default browser has SAME ORIGIN POLICY(SOP) which prevents a website from reading API responses from a different domain.
+CORS stands for CROSS ORIGIN RESOURCE SHARING it a mechanism that allows us to safely bypass this restriction.
+By setting specific CORS HTTP headers on our server response, we can explicitly tell the browser that out frontend app is 
+allowed to read and access the server's resources, even though they are on different origin.
+
+CORS security feature enforced by browser, not server
+The above middleware configures CORS, adds necessary http headers to our server response
+like allow-access-control-origin to tell browser that req from specific frontend URL are allowed.
+If another website tries to call this API, the middleware won't provide the allowed hearder,
+hence the user browser will block that website from reading the response.
+*/
 
 connectDB()
   .then(() => {

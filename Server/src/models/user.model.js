@@ -39,6 +39,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+//arrow functions can't use as their this is undefined.
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return;
 

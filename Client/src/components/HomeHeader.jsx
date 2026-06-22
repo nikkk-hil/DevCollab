@@ -4,10 +4,6 @@ import { getAgoTime } from "../utils/time";
 function HomeHeader({
   onLogout,
   isLoggingOut,
-  onToggleNotifications,
-  showNotifications,
-  recentActivities,
-  notificationsLoading,
 }) {
   return (
     <header className="relative rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-sm sm:p-5">

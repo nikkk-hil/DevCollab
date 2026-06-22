@@ -23,17 +23,8 @@ function Board({
   // Backend may return ObjectId or populated user object.
   // How will you normalize safely before rendering avatar/fullName/username?
 
+
   // Challenge D:
-  // Remove member UX:
-  // Add confirmation? disable only clicked member remove button?
-  // How do you show per-member error without affecting other members?
-
-  // Challenge E:
-  // Accessibility:
-  // Popover should close on outside click and Escape.
-  // How will you implement it without memory leaks?
-
-  // Challenge F:
   // Race safety:
   // If user double-clicks remove/delete, how will you guard duplicate requests?
 

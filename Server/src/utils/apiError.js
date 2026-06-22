@@ -4,15 +4,15 @@ class ApiError extends Error {
         message,
         stack=""
     ){
-        super(message);
+        super(message);     //calling Error class constructor (js ritual)
         this.statusCode = statusCode;
         this.message = message
-        this.sucess = false;
+        this.success = false;
         
         if (stack)
             this.stack = stack
         else
-            Error.captureStackTrace(this, this.constructor)
+            Error.captureStackTrace(this, this.constructor) //Trace where error happened
     }
 }
 
