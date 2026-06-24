@@ -11,7 +11,7 @@ function SignupComponent() {
   const [avatar, setAvatar] = useState(null);
   const [apiCalling, setApiCalling] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(false);

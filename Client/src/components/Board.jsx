@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAgoTime } from "../utils/time";
+import { useSelector } from "react-redux";
 
 function Board({
   board,
@@ -28,6 +29,7 @@ function Board({
   // Race safety:
   // If user double-clicks remove/delete, how will you guard duplicate requests?
 
+  const {user} = useSelector(state => state.auth)
   const navigate = useNavigate();
   const [showMembersPopover, setShowMembersPopover] = useState(false);
 
@@ -56,12 +58,6 @@ function Board({
       role="button"
       tabIndex={0}
       onClick={goToBoard}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          goToBoard();
-        }
-      }}
       className={`group relative cursor-pointer overflow-visible rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-950/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${showMembersPopover ? "z-30" : ""}`}
     >
       <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br from-cyan-500/30 to-sky-400/10 blur-2xl" />
@@ -131,7 +127,7 @@ function Board({
 
             {showMembersPopover && (
               <div
-                className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-cyan-500/35 bg-slate-900/95 p-3 text-left shadow-2xl shadow-black/60 backdrop-blur"
+                className="absolute right-0 top-[calc(100%+8px)] z-50 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-cyan-500/35 bg-slate-900/95 p-3 text-left shadow-2xl shadow-black/60 backdrop-blur cursor-default"
                 onClick={(event) => event.stopPropagation()}
               >
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -176,7 +172,7 @@ function Board({
 
                           <button
                             type="button"
-                            hidden={isOwner}
+                            hidden={isOwner || user._id === memberId}
                             disabled={removedMemberIds.has(memberId)}
                             onClick={(event) => {
                               event.stopPropagation();

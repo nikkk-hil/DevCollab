@@ -12,7 +12,8 @@ createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <SocketProvider>
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
+        {/* prevents app from rendering util persisted redux state is loaded. */}
+        <PersistGate loading={null} persistor={persistor}> 
           <App />
         </PersistGate>
       </Provider>

@@ -8,7 +8,7 @@ function LoginComponent() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [apiCalling, setApiCalling] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,15 +25,15 @@ function LoginComponent() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!usernameOrEmail.trim() || !password) {
-      setError("Username/email and password are required.");
+    if (!username.trim() || !password) {
+      setError("Username and password are required.");
       return;
     }
 
     try {
       setError("");
       setApiCalling(true);
-      const user = await loginUser({ username: usernameOrEmail, password });
+      const user = await loginUser({ username: username, password });
       dispatch(login(user.data.data));
       navigate("/", { replace: true });
     } catch (error) {
@@ -91,15 +91,15 @@ function LoginComponent() {
 
           <form onSubmit={handleLogin} className="mt-7 space-y-4">
             <div>
-              <label htmlFor="usernameOrEmail" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
+              <label htmlFor="username" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
                 Username
               </label>
               <input
-                id="usernameOrEmail"
+                id="username"
                 type="text"
                 placeholder="Username"
-                value={usernameOrEmail}
-                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:bg-slate-950 focus:ring"
               />
             </div>

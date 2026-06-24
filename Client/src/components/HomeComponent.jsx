@@ -2,8 +2,19 @@ import { useDispatch, useSelector } from "react-redux";
 import Board from "./Board.jsx";
 import HomeHeader from "./HomeHeader.jsx";
 import { useEffect, useState } from "react";
-import { createBoard, deleteBoard, getBoards, removeMemberFromBoard } from "../api/board.js";
-import { addBoard, clearBoard, removeBoard, setBoard, updateBoard } from "../store/slices/boardSlice.js";
+import {
+  createBoard,
+  deleteBoard,
+  getBoards,
+  removeMemberFromBoard,
+} from "../api/board.js";
+import {
+  addBoard,
+  clearBoard,
+  removeBoard,
+  setBoard,
+  updateBoard,
+} from "../store/slices/boardSlice.js";
 import { logoutUser } from "../api/auth.js";
 import { logout } from "../store/slices/authSlice.js";
 import { clearColumns } from "../store/slices/columnSlice.js";
@@ -21,18 +32,38 @@ function HomeComponent() {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const { boards } = useSelector((state) => state.board);
+  console.log(boards);
   const [boardTitle, setBoardTitle] = useState("");
-  const [boardType, setBoardType] = useState("DSA")
+  const [boardType, setBoardType] = useState("DSA");
   const [error, setError] = useState("");
-  const [loggingOut, setLoggingOut] = useState(false)
-  const [apiCalling, setApiCalling] = useState(false)
-  const [boardError, setBoardError] = useState("")
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [apiCalling, setApiCalling] = useState(false);
+  const [boardError, setBoardError] = useState("");
+
+  const [boardState, setBoardState] = useState({});
+
   // Challenge 2:
   // Fetch boards on mount.
   // Question: where should source-of-truth live, API state or Redux state?
   // Implement a fetchBoards() that handles loading, success, and failure states.
 
+  const resetBoardState = () => {
+    const initialState = {};
+
+    boards.forEach((board) => {
+      initialState[board._id] = {
+        apiCalling: false,
+        error: "",
+      };
+    });
+
+    setBoardState(initialState);
+  }
+
   useEffect(() => {
+    console.log("Inside useEffect.");
+    resetBoardState();
+
     (async () => {
       try {
         if (boards.length === 0) setLoading(true);
@@ -49,25 +80,23 @@ function HomeComponent() {
     })();
   }, [boards.length]);
 
-
   const handleLogout = async () => {
     try {
-        setLoggingOut(true);
-        await logoutUser();
-        dispatch(logout());
-        dispatch(clearBoard());
-        dispatch(clearColumns());
-        dispatch(clearCards());
-        dispatch(clearActivities());
+      setLoggingOut(true);
+      await logoutUser();
+      dispatch(logout());
+      dispatch(clearBoard());
+      dispatch(clearColumns());
+      dispatch(clearCards());
+      dispatch(clearActivities());
     } catch (error) {
-        setError(
-            error.response?.data?.message ||
-            "Failed to logout. Please try again."
-        );
+      setError(
+        error.response?.data?.message || "Failed to logout. Please try again.",
+      );
     } finally {
-        setLoggingOut(false);
+      setLoggingOut(false);
     }
-  }
+  };
 
   // Challenge 4:
   // Implement logout flow.
@@ -80,70 +109,88 @@ function HomeComponent() {
   const handleCreateBoard = async (e) => {
     e.preventDefault();
     try {
-        setError("");
-        if (!boardTitle.trim()) {
-            setError("Board title is required.");
-            return;
-        }
-        if (!["DSA", "Project"].some((e) => e === boardType.trim())) {
-            setError("Invalid board type.");
-            return;
-        }
-        setApiCalling(true);
-        const res = await createBoard({ title: boardTitle, type: boardType });
-        dispatch(addBoard(res.data.data));
-        setBoardTitle("");
-        setBoardType("DSA");
+      setError("");
+      if (!boardTitle.trim()) {
+        setError("Board title is required.");
+        return;
+      }
+      if (!["DSA", "Project"].some((e) => e === boardType.trim())) {
+        setError("Invalid board type.");
+        return;
+      }
+      setApiCalling(true);
+      const res = await createBoard({ title: boardTitle, type: boardType });
+      dispatch(addBoard(res.data.data));
+      setBoardTitle("");
+      setBoardType("DSA");
     } catch (error) {
-        setError(
-            error.response?.data?.message ||
-            "Failed to create board. Please try again."
-        );
+      setError(
+        error.response?.data?.message ||
+          "Failed to create board. Please try again.",
+      );
     } finally {
-        setApiCalling(false);
+      setApiCalling(false);
     }
-  }
+  };
 
   // Challenge 6:
   // Wire board actions (remove member, delete board).
   const handleRemoveMember = async (boardId, memberId) => {
     try {
-        setBoardError("");
-        setApiCalling(true)
-        const res = await removeMemberFromBoard(boardId, memberId)
-        dispatch(updateBoard(res.data.data));
+        resetBoardState();
+        setBoardState( prev => ({
+        ...prev,
+        [boardId]: {apiCalling: true, error: ""}
+      }))
+      set
+      const res = await removeMemberFromBoard(boardId, memberId);
+      dispatch(updateBoard(res.data.data));
     } catch (error) {
-        setBoardError(
-            error.response?.data?.message ||
-            "Failed to remove member. Please try again."
-        );
+      const err = error.response?.data?.message ||
+          "Failed to remove member. Please try again."
+      setBoardState( prev => ({
+        ...prev,
+        [boardId]: {...prev[boardId], error: err}
+      }))
     } finally {
-        setApiCalling(false);
+      setBoardState( prev => ({
+        ...prev,
+        [boardId]: {...prev[boardId], apiCalling: false}
+      }))
     }
-  }
-  
+  };
+
   const handleDeleteBoard = async (boardId) => {
     try {
-        setBoardError("")
-        setApiCalling(true)
-        await deleteBoard(boardId)
-        dispatch(removeBoard(boardId));
-
+      resetBoardState();
+      setBoardState( prev => ({
+        ...prev,
+        [boardId]: {apiCalling: true, error: ""}
+      }))
+      await deleteBoard(boardId);
+      dispatch(removeBoard(boardId));
     } catch (error) {
-        setBoardError(
-            error.response?.data?.message ||
-            "Failed to delete board. Please try again."
-        );
+      const err = error.response?.data?.message ||
+          "Failed to delete board. Please try again.";
+      console.log(err);
+      setBoardState( prev => ({
+        ...prev,
+        [boardId]: { ...prev[boardId], error: err,}
+      }))
     } finally {
-        setApiCalling(false);
+      setBoardState( prev => ({
+        ...prev,
+        [boardId]: {...prev[boardId], apiCalling: false},
+      }))
     }
-  }
+  };
 
-  if (loading) return(
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
-      <div className="text-slate-300">Loading...</div>
-    </div>
-  )
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="text-slate-300">Loading...</div>
+      </div>
+    );
 
   return (
     <section className="min-h-screen bg-slate-950 p-4 sm:p-6">
@@ -199,13 +246,17 @@ function HomeComponent() {
                 key={board._id}
                 board={board}
                 // TODO: wire remove-member action from members popover in Board component.
-                onRemoveMember={(boardId, memberId) => {handleRemoveMember(boardId, memberId)}}
+                onRemoveMember={(boardId, memberId) => {
+                  handleRemoveMember(boardId, memberId);
+                }}
                 // TODO: wire delete-board action.
-                onDeleteBoard={(boardId) => {handleDeleteBoard(boardId)}}
+                onDeleteBoard={(boardId) => {
+                  handleDeleteBoard(boardId);
+                }}
                 // TODO: connect board-specific loading map, not a single global boolean.
-                actionLoading={apiCalling}
+                actionLoading={boardState[board._id]?.apiCalling || false}
                 // TODO: pass board-specific error text.
-                actionError={boardError}
+                actionError={boardState[board._id]?.error || ""}
               />
             ))}
           </div>

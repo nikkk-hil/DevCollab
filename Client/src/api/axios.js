@@ -13,12 +13,12 @@ const api = axios.create({
 });
 
 function forceLogout() {
-  store.dispatch(logout());
+  store.dispatch(logout());       //clear in-memory store
   store.dispatch(clearBoard());
   store.dispatch(clearColumns());
   store.dispatch(clearCards());
   store.dispatch(clearActivities());
-  persistor.purge();
+  persistor.purge();              //delete previously persisted state.
 }
 
 api.interceptors.response.use(
@@ -38,7 +38,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         await api.post("/user/refresh-access-token");
-        return api(originalRequest);
+        return api(originalRequest);   //passing same object to the axios so that ._retry property present in next response.
       } catch (refErr) {
         forceLogout();
         return Promise.reject(refErr);

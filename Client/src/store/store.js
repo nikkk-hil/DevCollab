@@ -5,6 +5,19 @@ import boardSlice from "./slices/boardSlice"
 import columnSlice from "./slices/columnSlice"
 import activitySlice from "./slices/activitySlice"  
 import cardSlice from "./slices/cardSlice"
+// import storage from 'redux-persist/lib/storage';
+
+
+
+// export const store = configureStore({
+//   reducer: {
+//     auth: authSlice,
+//     board: boardSlice,
+//     column: columnSlice,
+//     activity: activitySlice,
+//     card: cardSlice
+//   },
+// })
 
 const storage = {
     getItem: (key) => Promise.resolve(localStorage.getItem(key)),
@@ -15,6 +28,7 @@ const storage = {
 const persistConfig = {
   key: 'root',
   storage,
+  whitelist: ['auth']
 }
 
 const rootReducers = combineReducers({
@@ -34,6 +48,12 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store)
+
+
+
+
+
+
 
 
 // import { createStore } from 'redux'
