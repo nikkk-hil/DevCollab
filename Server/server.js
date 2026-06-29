@@ -46,6 +46,11 @@ connectDB()
   })
 
 
+  app.get('/', (req, res) => {
+  res.send('Hello World')
+})
+
+
 /* importing routes  */
 import userRouter from "./src/routes/user.routes.js";
 import boardRouter from "./src/routes/board.routes.js"
