@@ -3,16 +3,21 @@ import { useSelector } from "react-redux";
 
 function FeedbackComponent({ setShowFeedback, showFeedback }) {
     const cards = useSelector((state) => state.card);
+    const directFeedback = showFeedback?.aiFeedback;
+    const feedbackCardId = showFeedback?.card || showFeedback;
     let pickCard;
     Object.keys(cards).forEach((status) => {
         cards[status].forEach((card) => {
-        if (card?._id?.toString?.() === showFeedback?.toString?.()){
+        if (card?._id?.toString?.() === feedbackCardId?.toString?.()){
             pickCard = card.aiFeedback;
         }
         })
 
     })
-    const feedback = typeof pickCard === "object" ? pickCard : {};
+    
+    const feedback = directFeedback || pickCard;
+    if (!feedback || typeof feedback !== "object") return null;
+
     const patternAnalysis = feedback?.patternAnalysis || "NA";
     const tc = feedback?.timeComplexity || "NA";
     const sc = feedback?.spaceComplexity || "NA";

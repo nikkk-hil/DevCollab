@@ -345,8 +345,12 @@ const updateCardProgress = asyncHandler(async (req, res) => {
 const getFeedback = asyncHandler(async (req, res) => {
   const {cardId} = req.params;
   const {problemTitle, code, notes} = req.body
+  const hasCode = typeof code === "string" && code.trim();
+  const hasNotes =
+    notes &&
+    Object.values(notes).some((value) => String(value || "").trim());
 
-  if (!code && !notes)
+  if (!hasCode && !hasNotes)
     throw new ApiError(400, "Code or Notes is required.");
 
   console.log("Before calling getAiResponse")
@@ -356,7 +360,7 @@ const getFeedback = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Feedback evaluation failed, try again.")
 
   const cardProgress = await CardProgress.findOneAndUpdate({card: cardId, user: req.user._id},
-    {aiFeedback: feedbackResponse}, {mew: true}
+    {aiFeedback: feedbackResponse}, {new: true}
   )
 
   return res

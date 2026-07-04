@@ -53,13 +53,9 @@ function BoardComponent() {
   const [creatingCard, setCreatingCard] = useState(false);
   const socket = useSocket();
   const [activeCard, setActiveCard] = useState(null);
-  const [problemData, setProblemData] = useState({
-    solution: null,
-    reflections: {},
-  });
-  const [feedbackRes, setFeedbackRes] = useState(null)
   const [showFeedback, setShowFeedback] = useState(null)
   const [showNotes, setShowNotes] = useState(null)
+  const [generatingFeedback, setGeneratingFeedback] = useState(false)
 
   const activeBoard = useMemo(
     () => boards.find((board) => board._id === boardId),
@@ -195,7 +191,7 @@ function BoardComponent() {
       aiFeedback: null,
     };
     try {
-      const res = await updateProgress(boardId, draggableId, data);
+      await updateProgress(boardId, draggableId, data);
     } catch (error) {
       dispatch(
         changeStatusOfCard({
@@ -216,7 +212,7 @@ function BoardComponent() {
   };
 
   const handleProblemAnalysisSubmit = async (data) => {
-    const soltion = data?.solution;
+    const solution = data?.solution?.trim() || "";
     const reflections = {
       approach: data?.reflections?.approach,
       struggles: data?.reflections?.struggles,
@@ -224,18 +220,33 @@ function BoardComponent() {
       spaceComplexity: data?.reflections?.complexity?.space,
       takeaway: data?.reflections?.takeaways,
     };
+    const hasNotes = Object.values(reflections).some((value) =>
+      String(value || "").trim(),
+    );
+
+    if (!activeCard || (!solution && !hasNotes)) return;
 
     try {
-      const progress = await updateProgress(boardId, activeCard.cardId, {status: "completed", notes: reflections});
       setActiveCard(null);
-      const feedback = await getFeedback(boardId, activeCard.cardId, {code: soltion, notes: reflections})
-      dispatch(addFeedbackNotes(feedback.data.data))
-      setShowFeedback(feedback.data.data.card)
+      setGeneratingFeedback(true);
+      await updateProgress(boardId, activeCard.cardId, {status: "completed", notes: reflections});
+      const feedback = await getFeedback(boardId, activeCard.cardId, {code: solution, notes: reflections})
+      const progress = feedback.data.data;
+
+      if (!progress?.aiFeedback) {
+        toast.error("Feedback was not generated. Please try submitting again.");
+        return;
+      }
+
+      dispatch(addFeedbackNotes(progress))
+      setShowFeedback({ card: progress.card, aiFeedback: progress.aiFeedback })
     } catch (error) {
       console.log(
         error.response?.data?.message || error || "something went wrong.",
       );
     }
+
+    setActiveCard(null);
   };
 
   const columnCount = STATUS_COLUMNS.length;
@@ -319,9 +330,25 @@ function BoardComponent() {
             onSubmit={(data) => {
               handleProblemAnalysisSubmit(data);
             }}
-            onClose={() => setActiveCard(null)}
-            setProblemData={setProblemData}
+            onClose={handleProblemAnalysisClose}
           />
+        )}
+
+        {generatingFeedback && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="rounded-2xl border border-slate-800 bg-slate-900 px-6 py-5 text-center shadow-2xl">
+              <p className="text-sm font-semibold text-slate-100">
+                Generating feedback...
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Gemini is reviewing your solution.
+              </p>
+            </div>
+          </div>
         )}
 
         {(showFeedback) && <FeedbackComponent

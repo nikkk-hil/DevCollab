@@ -47,7 +47,7 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
           <button
             type="button"
             onClick={() => {
-              onSubmit({})
+              onClose()
             }}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700/70 bg-slate-950/60 text-slate-200 transition hover:border-emerald-400/60 hover:text-emerald-200"
             aria-label="Close"
