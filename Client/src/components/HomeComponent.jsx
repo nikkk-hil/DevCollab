@@ -98,14 +98,6 @@ function HomeComponent() {
     }
   };
 
-  // Challenge 4:
-  // Implement logout flow.
-  // Ask yourself: after logout succeeds, which slices must be cleared to avoid stale UI?
-
-  // Challenge 5:
-  // Implement create-board submit flow.
-  // Question: where should validation happen first, frontend or backend? (answer: both)
-
   const handleCreateBoard = async (e) => {
     e.preventDefault();
     try {
@@ -121,8 +113,6 @@ function HomeComponent() {
       setApiCalling(true);
       const res = await createBoard({ title: boardTitle, type: boardType });
       dispatch(addBoard(res.data.data));
-      setBoardTitle("");
-      setBoardType("DSA");
     } catch (error) {
       setError(
         error.response?.data?.message ||
@@ -130,6 +120,8 @@ function HomeComponent() {
       );
     } finally {
       setApiCalling(false);
+      setBoardTitle("");
+      setBoardType("DSA");
     }
   };
 
@@ -142,7 +134,6 @@ function HomeComponent() {
         ...prev,
         [boardId]: {apiCalling: true, error: ""}
       }))
-      set
       const res = await removeMemberFromBoard(boardId, memberId);
       dispatch(updateBoard(res.data.data));
     } catch (error) {
@@ -196,7 +187,6 @@ function HomeComponent() {
     <section className="min-h-screen bg-slate-950 p-4 sm:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         <HomeHeader
-          // TODO: implement logout handler and pass it here.
           onLogout={handleLogout}
           isLoggingOut={loggingOut}
         />
@@ -245,17 +235,13 @@ function HomeComponent() {
               <Board
                 key={board._id}
                 board={board}
-                // TODO: wire remove-member action from members popover in Board component.
                 onRemoveMember={(boardId, memberId) => {
                   handleRemoveMember(boardId, memberId);
                 }}
-                // TODO: wire delete-board action.
                 onDeleteBoard={(boardId) => {
                   handleDeleteBoard(boardId);
                 }}
-                // TODO: connect board-specific loading map, not a single global boolean.
                 actionLoading={boardState[board._id]?.apiCalling || false}
-                // TODO: pass board-specific error text.
                 actionError={boardState[board._id]?.error || ""}
               />
             ))}
