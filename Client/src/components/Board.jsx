@@ -40,8 +40,7 @@ function Board({
   const createdAt = board?.createdAt ? getAgoTime(board.createdAt) : "Unknown";
 
   const boardInitial = boardTitle.trim().charAt(0).toUpperCase() || "B";
-  // TODO: implement click-to-open-board behavior.
-  // Hint: navigate(`/board/${board?._id}`)
+
   const goToBoard = () => navigate(`/board/${board?._id}`);
   const removedMemberIds = new Set();
 
@@ -179,10 +178,6 @@ function Board({
                               removedMemberIds.add(memberId);
                               removeMember(memberId);
                               removedMemberIds.delete(memberId);
-                              // TODO: wire remove-member callback here.
-                              // Question: Should owner be removable? If not, how will you enforce in UI + backend?
-                              // Example wiring idea:
-                              // if (typeof onRemoveMember === "function") onRemoveMember(board?._id, memberId)
                             }}
                             className="rounded-md bg-rose-500/20 px-2 py-1 text-[11px] font-semibold text-rose-300 hover:bg-rose-500/30"
                           >
