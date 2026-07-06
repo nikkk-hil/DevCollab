@@ -1,83 +1,60 @@
 # DevCollab
 
-A collaborative Kanban-style board app with real-time updates, authentication, and activity tracking. The project includes a React client and an Express + MongoDB API server, plus Socket.IO for live collaboration.
+> Built this because my placement prep group was a mess — 
+> WhatsApp messages like "bhai tune sliding window kiya?" 
+> with no real answer. DevCollab gives everyone their own 
+> progress view on shared DSA boards.
 
-## Features
-- User authentication with JWT cookies
-- Boards, columns, cards, and comments
-- Real-time updates with Socket.IO
-- Activity tracking and timelines
-- Avatar upload with Cloudinary
-- AI feedback endpoint (Gemini)
+[Live Demo](https://dev-collab-nu-sepia.vercel.app/)
 
-## Tech Stack
-- Client: React, Vite, Tailwind CSS, Redux Toolkit, React Router
-- Server: Express, MongoDB/Mongoose, Socket.IO, JWT
+![App Screenshot](image.png)
 
-## Project Structure
-- Client: React front-end
-- Server: Express API and Socket.IO server
+## What it does
 
-## Prerequisites
-- Node.js 18+ (recommended)
-- MongoDB instance
-- Cloudinary account (for avatar uploads)
-- Gemini API key (optional, for AI feedback)
+You and your study group create a board for a DSA pattern 
+(say, Sliding Window). Everyone adds problems as cards. 
+Each member tracks their own progress — todo, in-progress, 
+done — independently on the same board. When someone 
+finishes a problem, everyone sees it move in real time.
 
-## Environment Variables
+Paste your code, write your approach notes, and get 
+AI feedback on whether you used the right pattern, 
+your actual time/space complexity, and where you can improve.
 
-### Client (.env)
-Create Client/.env with:
+## The part that took longest to get right
 
-VITE_API_URL=http://localhost:8000/api/v1
-VITE_SOCKET_URL=http://localhost:8000
+Token refresh on the frontend. When an access token expires 
+mid-session, the axios interceptor catches the 401, calls 
+the refresh endpoint, retries the original request — all 
+without the user noticing. But if the refresh token is also 
+expired, it forces logout instead of infinite retry loop. 
+Took a while to get that flow right.
 
-### Server (.env)
-Create Server/.env with:
+## Technical decisions worth mentioning
 
-PORT=8000
-MONGODB_URI=mongodb://localhost:27017
-CORS_ORIGIN=http://localhost:5173
-ACCESS_TOKEN_SECRET=your_access_token_secret
-ACCESS_TOKEN_EXPIRY=1d
-REFRESH_TOKEN_SECRET=your_refresh_token_secret
-REFRESH_TOKEN_EXPIRY=7d
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-GEMINI_API_KEY=your_gemini_api_key
+**Per-user card progress** — cards are shared across the board 
+but each member has their own CardProgress document tracking 
+their status. One card, five members, five independent states.
 
-Notes:
-- CORS_ORIGIN should match the client dev server URL.
-- Gemini API key is required only for AI feedback features.
+**WebSockets for activity feed** — when anyone moves a card 
+or adds a comment, the activity appears instantly for everyone 
+in that board room. No polling, no refresh.
 
-## Install & Run
+**AI feedback without storing code** — code is sent to Gemini 
+server-side, feedback is stored, code is discarded. 
+Only your notes and feedback stay in the DB.
 
-### 1) Server
-cd Server
-npm install
-npm run dev
+**JWT with refresh rotation** — short-lived access tokens 
+(15min) with httpOnly cookie refresh tokens. Middleware chain 
+separates auth → board ownership → card ownership concerns.
 
-### 2) Client
-cd Client
-npm install
-npm run dev
+## Stack
 
-The client typically runs on http://localhost:5173 and the server on http://localhost:8000.
+- **Frontend** — React, Redux Toolkit, Socket.io-client, 
+  Tailwind CSS, React Router
+- **Backend** — Node.js, Express, MongoDB, Socket.io
+- **Services** — Cloudinary (avatars), Gemini AI (feedback), 
+  JWT (auth)
 
-## Scripts
+## Architecture
 
-### Client
-- npm run dev: start Vite dev server
-- npm run build: build for production
-- npm run lint: run ESLint
-- npm run preview: preview production build
-
-### Server
-- npm run dev: start the API server with nodemon
-
-## API Base URL
-- http://localhost:8000/api/v1
-
-## License
-ISC

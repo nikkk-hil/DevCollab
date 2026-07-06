@@ -10,7 +10,7 @@ import {
   clearCards,
   setCards,
 } from "../store/slices/cardSlice";
-import { addActivity, clearActivities } from "../store/slices/activitySlice";
+import { addActivity, clearActivities, setActivity } from "../store/slices/activitySlice";
 import Column from "./Column";
 import { addMemberToBoard } from "../api/board";
 import { getUserByUsernameOrEmail } from "../api/auth";
@@ -79,9 +79,7 @@ function BoardComponent() {
         ]);
 
         dispatch(setCards(cardsRes.data.data));
-        for (let i = activitiesRes.data.data.length - 1; i >= 0; i--) {
-          dispatch(addActivity(activitiesRes.data.data[i]));
-        }
+        dispatch(setActivity(activitiesRes.data.data));
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch board data.");
       } finally {
@@ -127,16 +125,30 @@ function BoardComponent() {
       const memberId = userRes.data.data._id;
       const res = await addMemberToBoard(boardId, memberId);
       dispatch(updateBoard(res.data.data));
-      setMemberUsername("");
-      setAddMemberPopup(false);
     } catch (error) {
       setError(
         error.response?.data?.message ||
           "Failed to add member. Please try again.",
       );
     } finally {
+      setMemberUsername("");
+      setAddMemberPopup(false);
       setAddingMember(false);
     }
+  };
+
+  const handleProblemAnalysisClose = () => {
+    if (activeCard?.source) {
+      dispatch(
+        changeStatusOfCard({
+          cardId: activeCard.cardId,
+          to: activeCard.source,
+          from: "completed",
+        }),
+      );
+    }
+
+    setActiveCard(null);
   };
 
   const handleCreateCard = async () => {
@@ -145,6 +157,12 @@ function BoardComponent() {
       setError("");
       const res = await createCard(boardId, cardFormData);
       dispatch(addCard(res.data.data));
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Failed to create card. Please try again.",
+      );
+    } finally {
       setCardFormData({
         title: "",
         tags: [],
@@ -153,12 +171,6 @@ function BoardComponent() {
         description: "",
       });
       setAddCardPopup(false);
-    } catch (error) {
-      setError(
-        error.response?.data?.message ||
-          "Failed to create card. Please try again.",
-      );
-    } finally {
       setCreatingCard(false);
     }
   };
@@ -204,11 +216,6 @@ function BoardComponent() {
         error.response?.data?.message || error || "something went wrong.",
       );
     }
-    // TODO: parse result (source, destination, draggableId).
-    // TODO: exit if no destination or same position.
-    // TODO: handle reorder vs move across statuses.
-    // TODO: update state optimistically and call updateCardProgress.
-    // TODO: rollback state on API failure.
   };
 
   const handleProblemAnalysisSubmit = async (data) => {
@@ -233,20 +240,17 @@ function BoardComponent() {
       const feedback = await getFeedback(boardId, activeCard.cardId, {code: solution, notes: reflections})
       const progress = feedback.data.data;
 
-      if (!progress?.aiFeedback) {
-        toast.error("Feedback was not generated. Please try submitting again.");
-        return;
-      }
-
       dispatch(addFeedbackNotes(progress))
       setShowFeedback({ card: progress.card, aiFeedback: progress.aiFeedback })
     } catch (error) {
       console.log(
         error.response?.data?.message || error || "something went wrong.",
       );
+    } finally {
+      setActiveCard(null);
+      setGeneratingFeedback(false);
     }
 
-    setActiveCard(null);
   };
 
   const columnCount = STATUS_COLUMNS.length;

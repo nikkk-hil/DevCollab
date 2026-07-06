@@ -8,6 +8,14 @@ const activitySlice = createSlice({
     name: "activity",
     initialState,
     reducers: {
+        setActivity: (state, action) => {
+            const activityArr = action.payload;
+
+            if (Array.isArray(activityArr)){
+                state.activities = activityArr;
+            }
+        },
+
         addActivity: (state, action) => {
             const incomingId = action.payload?._id?.toString?.() || action.payload?._id;
 
@@ -32,5 +40,5 @@ const activitySlice = createSlice({
     }
 })
 
-export const {addActivity, clearActivities, updateActivity} = activitySlice.actions;
+export const {addActivity, clearActivities, updateActivity, setActivity} = activitySlice.actions;
 export default activitySlice.reducer

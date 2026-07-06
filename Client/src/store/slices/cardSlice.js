@@ -10,7 +10,7 @@ const initialState = {
 const arrayMap = {
   "to-do": "todoCards",
   "in-progress": "inProgressCards",
-  completed: "completedCards",
+  "completed": "completedCards",
 };
 
 const cardSlice = createSlice({
