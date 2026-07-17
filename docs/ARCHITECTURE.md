@@ -164,7 +164,7 @@ sequenceDiagram
 
     U->>C: Login with credentials
     C->>A: POST /user/login
-    A->>D: Verify password; store refresh token
+    A->>D: Verify password and store refresh token
     A-->>C: Set httpOnly access + refresh cookies
     C->>C: Store safe user profile in Redux
 
