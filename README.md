@@ -58,3 +58,5 @@ separates auth → board ownership → card ownership concerns.
 
 ## Architecture
 
+See the full [architecture and workflow diagrams](docs/ARCHITECTURE.md), including the system overview, data model, authentication lifecycle, real-time activity flow, and Gemini feedback workflow.
+
