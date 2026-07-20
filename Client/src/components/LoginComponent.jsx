@@ -53,93 +53,96 @@ function LoginComponent() {
     );
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-8 sm:px-6">
-      <div className="pointer-events-none absolute -left-24 top-20 h-64 w-64 rounded-full bg-cyan-500/35 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-10 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
-
-      <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="hidden rounded-3xl border border-slate-700 bg-slate-900/80 p-8 shadow-sm backdrop-blur lg:block">
-          <p className="inline-flex rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-300">
-            Welcome Back
-          </p>
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-100">
-            Log in and continue building with DevCollab.
-          </h1>
-          <p className="mt-4 max-w-md text-sm leading-6 text-slate-300">
-            Manage boards, track progress, and collaborate with your team from one place.
-          </p>
-
-          <div className="mt-8 space-y-3">
-            <div className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-200">
-              Real-time board collaboration
-            </div>
-            <div className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-200">
-              Activity timeline and updates
-            </div>
-            <div className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-200">
-              Fast workflow for interviews and projects
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-xl sm:p-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-300">DevCollab</p>
-            <h2 className="mt-2 text-3xl font-extrabold text-slate-100">Login</h2>
-            <p className="mt-2 text-sm text-slate-400">Use your username or email and password to continue.</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="mt-7 space-y-4">
+    <div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl items-center justify-center">
+        <div className="w-full overflow-hidden rounded-[28px] border border-slate-800/80 bg-slate-900/80 shadow-[0_20px_70px_rgba(2,6,23,0.45)] backdrop-blur md:grid md:grid-cols-[0.95fr_1.05fr]">
+          <section className="hidden border-b border-slate-800 bg-slate-950/70 p-8 md:flex md:flex-col md:justify-between">
             <div>
-              <label htmlFor="username" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:bg-slate-950 focus:ring"
-              />
+              <p className="inline-flex rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-300">
+                Welcome back
+              </p>
+              <h1 className="mt-5 text-3xl font-semibold leading-tight text-slate-50">
+                Study together, solve smarter.
+              </h1>
+              <p className="mt-3 max-w-md text-sm leading-6 text-slate-400">
+                DevCollab helps placement-prep groups track DSA problems, share progress, and get AI feedback in one shared workspace.
+              </p>
             </div>
 
-            <div>
-              <label htmlFor="password" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-300">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none ring-cyan-400 placeholder:text-slate-500 focus:bg-slate-950 focus:ring"
-              />
-            </div>
-
-            {error && (
-              <div className="rounded-xl border border-rose-500/40 bg-rose-500/15 px-3 py-2 text-sm font-medium text-rose-300">
-                {error}
+            <div className="mt-8 space-y-3 text-sm text-slate-300">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-3">
+                Shared DSA boards for your study group
               </div>
-            )}
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-3">
+                Personal progress tracking for every problem
+              </div>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 px-4 py-3">
+                AI feedback on approach, complexity, and improvement
+              </div>
+            </div>
+          </section>
 
-            <button
-              type="submit"
-              disabled={apiCalling}
-              className="w-full rounded-xl bg-cyan-500 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {apiCalling ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
+          <section className="p-6 sm:p-8">
+            <div className="mx-auto max-w-md">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-cyan-300">DevCollab</p>
+              <h2 className="mt-2 text-3xl font-semibold text-slate-50">Login</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Use your username or email and password to continue.
+              </p>
 
-          <p className="mt-5 text-center text-sm text-slate-400">
-            New to DevCollab?{" "}
-            <Link to="/signup" className="font-semibold text-cyan-300 hover:text-cyan-200 hover:underline">
-              Create an account
-            </Link>
-          </p>
-        </section>
+              <form onSubmit={handleLogin} className="mt-7 space-y-4">
+                <div>
+                  <label htmlFor="username" className="mb-1.5 block text-sm font-medium text-slate-300">
+                    Username
+                  </label>
+                  <input
+                    id="username"
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-300">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
+                  />
+                </div>
+
+                {error && (
+                  <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={apiCalling}
+                  className="w-full rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {apiCalling ? "Signing in..." : "Sign In"}
+                </button>
+              </form>
+
+              <p className="mt-6 text-center text-sm text-slate-400">
+                New to DevCollab?{" "}
+                <Link to="/signup" className="font-semibold text-cyan-300 transition hover:text-cyan-200">
+                  Create an account
+                </Link>
+              </p>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

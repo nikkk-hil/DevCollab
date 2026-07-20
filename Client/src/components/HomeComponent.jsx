@@ -78,7 +78,7 @@ function HomeComponent() {
         setLoading(false);
       }
     })();
-  }, [boards.length]);
+  }, []);
 
   const handleLogout = async () => {
     try {
