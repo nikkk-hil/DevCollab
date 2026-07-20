@@ -56,6 +56,7 @@ function BoardComponent() {
   const [showFeedback, setShowFeedback] = useState(null)
   const [showNotes, setShowNotes] = useState(null)
   const [generatingFeedback, setGeneratingFeedback] = useState(false)
+  const [problemAnalysisError, setProblemAnalysisError] = useState("")
 
   const activeBoard = useMemo(
     () => boards.find((board) => board._id === boardId),
@@ -154,15 +155,8 @@ function BoardComponent() {
   const handleCreateCard = async () => {
     try {
       setCreatingCard(true);
-      setError("");
       const res = await createCard(boardId, cardFormData);
       dispatch(addCard(res.data.data));
-    } catch (error) {
-      setError(
-        error.response?.data?.message ||
-          "Failed to create card. Please try again.",
-      );
-    } finally {
       setCardFormData({
         title: "",
         tags: [],
@@ -171,6 +165,12 @@ function BoardComponent() {
         description: "",
       });
       setAddCardPopup(false);
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Failed to create card. Please try again.",
+      );
+    } finally {
       setCreatingCard(false);
     }
   };
@@ -230,6 +230,12 @@ function BoardComponent() {
     const hasNotes = Object.values(reflections).some((value) =>
       String(value || "").trim(),
     );
+
+    if (!solution || !hasNotes){
+      setProblemAnalysisError("All fields are mandatory.");
+      return;
+    }
+        
 
     if (!activeCard || (!solution && !hasNotes)) return;
 
@@ -315,6 +321,7 @@ function BoardComponent() {
             cardFormData={cardFormData}
             setCardFormData={setCardFormData}
             handleCreateCard={handleCreateCard}
+            creatingCard={creatingCard}
           />
         )}
 
@@ -335,6 +342,8 @@ function BoardComponent() {
               handleProblemAnalysisSubmit(data);
             }}
             onClose={handleProblemAnalysisClose}
+            error={problemAnalysisError}
+            setError={(err) => setProblemAnalysisError(err)}
           />
         )}
 

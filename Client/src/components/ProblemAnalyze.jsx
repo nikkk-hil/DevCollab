@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function ProblemAnalyze({ cardId, onSubmit, onClose }) {
+function ProblemAnalyze({ cardId, onSubmit, onClose, error, setError }) {
   const [code, setCode] = useState("");
   const [notes, setNotes] = useState({
     approach: "",
@@ -82,7 +82,10 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
               <div className="flex-1 rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
                 <textarea
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => {
+                    setError("");
+                    setCode(e.target.value);
+                  }}
                   className="min-h-[200px] h-full w-full resize-none bg-transparent font-mono text-sm text-slate-100 placeholder-slate-500 outline-none"
                   placeholder="Paste your DSA solution code here..."
                 />
@@ -104,9 +107,10 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                     className="min-h-[110px] w-full resize-none bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
                     placeholder="Explain the approach in a few concise sentences."
                     value={notes.approach}
-                    onChange={(e) =>
-                      setNotes((prev) => ({ ...prev, approach: e.target.value }))
-                    }
+                    onChange={(e) =>{
+                      setError("");
+                      setNotes((prev) => ({ ...prev, approach: e.target.value }));
+                    }}
                   />
                 </div>
                 <div className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
@@ -117,9 +121,10 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                     className="min-h-[110px] w-full resize-none bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
                     placeholder="Where did you get stuck or hesitate?"
                     value={notes.struggles}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setError("");
                       setNotes((prev) => ({ ...prev, struggles: e.target.value }))
-                    }
+                    }}
                   />
                 </div>
               </div>
@@ -133,12 +138,13 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                     className="mt-2 w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
                     placeholder="e.g. O(n log n)"
                     value={notes.complexity.time}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setError("")
                       setNotes((prev) => ({
                         ...prev,
                         complexity: { ...prev.complexity, time: e.target.value },
                       }))
-                    }
+                    }}
                   />
                 </div>
                 <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 px-4 py-3">
@@ -149,12 +155,13 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                     className="mt-2 w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
                     placeholder="e.g. O(n)"
                     value={notes.complexity.space}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setError("")
                       setNotes((prev) => ({
                         ...prev,
                         complexity: { ...prev.complexity, space: e.target.value },
                       }))
-                    }
+                    }}
                   />
                 </div>
                 <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 px-4 py-3">
@@ -165,12 +172,13 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                     className="mt-2 w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
                     placeholder="e.g. 35 min"
                     value={notes.timeSpent}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setError("");
                       setNotes((prev) => ({
                         ...prev,
                         timeSpent: e.target.value,
                       }))
-                    }
+                    }}
                   />
                 </div>
                 <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 px-4 py-3">
@@ -181,14 +189,19 @@ function ProblemAnalyze({ cardId, onSubmit, onClose }) {
                     className="mt-2 w-full bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
                     placeholder="e.g. two pointers, monotonic stack, prefix sums"
                     value={notes.takeaways}
-                    onChange={(e) =>
+                    onChange={(e) =>{
+                      setError("");
                       setNotes((prev) => ({ ...prev, takeaways: e.target.value }))
-                    }
+                    }}
                   />
                 </div>
               </div>
             </section>
           </div>
+
+          {error && <div className="mt-2 text-sm uppercase tracking-[0.2em] text-red-400">
+              {error}
+            </div>}
 
           <div className="mt-8 border-t border-slate-800/70 pt-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
