@@ -70,10 +70,7 @@ function BoardComponent() {
       try {
         setLoading(true);
         setError("");
-
-        dispatch(clearCards());
-        dispatch(clearActivities());
-
+        
         const [cardsRes, activitiesRes] = await Promise.all([
           getCards(boardId),
           getBoardAcitivities(boardId),
